@@ -1,0 +1,107 @@
+{
+  "site": {
+    "title": "The Buckingham Vault",
+    "tagline": "Privates Digitales Vermögensmanagement",
+    "description": "Wo Digitale Souveränität auf Private Wealth Excellence trifft"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "analytics": "Analysen",
+    "services": "Dienstleistungen",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "language": "Sprache"
+  },
+  "hero": {
+    "title": "The Buckingham Vault",
+    "subtitle": "Privates Digitales Vermögensmanagement",
+    "description": "Wo Digitale Souveränität auf Private Wealth Excellence trifft",
+    "cta": {
+      "primary": "Analysen erkunden",
+      "secondary": "Mehr erfahren"
+    }
+  },
+  "contact": {
+    "title": "Kontakt",
+    "subtitle": "Verbinden Sie sich mit unseren Vermögensspezialisten",
+    "form": {
+      "name": "Vollständiger Name",
+      "email": "E-Mail-Adresse",
+      "company": "Unternehmen/Organisation",
+      "title": "Titel/Position",
+      "phone": "Telefonnummer",
+      "message": "Nachricht",
+      "submit": "Vertrauliche Anfrage senden",
+      "submitting": "Sichere Anfrage wird übermittelt...",
+      "success": "Vielen Dank!",
+      "successMessage": "Ihre Anfrage wurde erhalten. Einer unserer Senior-Berater wird Sie innerhalb von 24 Stunden kontaktieren.",
+      "required": "Erforderlich",
+      "optional": "Optional"
+    },
+    "privacy": {
+      "consent": "Ich stimme der Datenschutzerklärung zu und willige in die Verarbeitung meiner personenbezogenen Daten für den Zweck dieser Anfrage ein.",
+      "marketing": "Ich möchte Updates über Dienstleistungen und Markteinblicke erhalten (optional)"
+    }
+  },
+  "analytics": {
+    "title": "BV Analytics",
+    "subtitle": "Institutionelle Marktintelligenz-Plattform",
+    "features": {
+      "realTime": "Echtzeitdaten",
+      "advanced": "Erweiterte Analysen",
+      "secure": "Banksicherheit",
+      "global": "Globale Märkte"
+    }
+  },
+  "common": {
+    "loading": "Lädt",
+    "error": "Fehler",
+    "tryAgain": "Erneut versuchen",
+    "goHome": "Zur Startseite",
+    "backToHome": "Zurück zur Startseite",
+    "offline": "Sie sind offline",
+    "online": "Sie sind online",
+    "comingSoon": "Demnächst verfügbar",
+    "learnMore": "Mehr erfahren",
+    "getStarted": "Loslegen",
+    "readMore": "Weiterlesen",
+    "close": "Schließen",
+    "open": "Öffnen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "sort": "Sortieren",
+    "export": "Exportieren",
+    "import": "Importieren",
+    "download": "Herunterladen",
+    "upload": "Hochladen"
+  },
+  "time": {
+    "now": "jetzt",
+    "today": "heute",
+    "yesterday": "gestern",
+    "tomorrow": "morgen",
+    "thisWeek": "diese Woche",
+    "lastWeek": "letzte Woche",
+    "nextWeek": "nächste Woche",
+    "thisMonth": "diesen Monat",
+    "lastMonth": "letzten Monat",
+    "nextMonth": "nächsten Monat",
+    "thisYear": "dieses Jahr",
+    "lastYear": "letztes Jahr",
+    "nextYear": "nächstes Jahr"
+  },
+  "errors": {
+    "pageNotFound": "Seite nicht gefunden",
+    "somethingWentWrong": "Etwas ist schiefgelaufen",
+    "networkError": "Netzwerkfehler",
+    "serverError": "Serverfehler",
+    "validationError": "Validierungsfehler",
+    "unauthorized": "Nicht autorisiert",
+    "forbidden": "Verboten",
+    "tooManyRequests": "Zu viele Anfragen"
+  }
+}

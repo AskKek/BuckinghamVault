@@ -1,0 +1,302 @@
+/**
+ * Filters State Slice
+ * Manages global filter state across all modules with persistence and presets
+ */
+
+import { StateCreator } from 'zustand'
+import { immer } from 'zustand/middleware/immer'
+import { FilterState, FilterActions, BuckinghamVaultState } from '../types'
+
+// Default filter state
+const initialFilterState: FilterState = {
+  deals: {
+    search: '',
+    status: [],
+    type: [],
+    dateRange: [null, null],
+    valueRange: [0, 1000000000], // $1B max
+    forensicRating: [],
+  },
+  knowledge: {
+    search: '',
+    category: [],
+    type: [],
+    tags: [],
+    featured: false,
+  },
+  exchange: {
+    assetType: [],
+    forensicRating: [],
+    priceRange: [0, 1000000], // $1M max
+    region: [],
+  },
+}
+
+// Filter slice type
+export interface FilterSlice {
+  filters: FilterState
+  actions: {
+    filters: FilterActions
+  }
+}
+
+// Filter slice implementation
+export const createFilterSlice: StateCreator<
+  BuckinghamVaultState,
+  [['zustand/immer', never]],
+  [],
+  FilterSlice
+> = immer((set, get) => ({
+  filters: initialFilterState,
+
+  actions: {
+    filters: {
+      setDealFilters: (filters) => {
+        set((state) => {
+          Object.assign(state.filters.deals, filters)
+        })
+        
+        // Debounced persistence
+        persistFilters('deals', get().filters.deals)
+      },
+
+      setKnowledgeFilters: (filters) => {
+        set((state) => {
+          Object.assign(state.filters.knowledge, filters)
+        })
+        
+        persistFilters('knowledge', get().filters.knowledge)
+      },
+
+      setExchangeFilters: (filters) => {
+        set((state) => {
+          Object.assign(state.filters.exchange, filters)
+        })
+        
+        persistFilters('exchange', get().filters.exchange)
+      },
+
+      resetFilters: (module) => {
+        set((state) => {
+          if (module) {
+            state.filters[module] = { ...initialFilterState[module] }
+          } else {
+            state.filters = { ...initialFilterState }
+          }
+        })
+        
+        // Clear persisted filters
+        if (typeof window !== 'undefined') {
+          if (module) {
+            localStorage.removeItem(`buckingham-filters-${module}`)
+          } else {
+            Object.keys(initialFilterState).forEach(key => {
+              localStorage.removeItem(`buckingham-filters-${key}`)
+            })
+          }
+        }
+      },
+
+      saveFilterPreset: (name, module) => {
+        const currentFilters = get().filters[module]
+        
+        if (typeof window !== 'undefined') {
+          const presets = getFilterPresets(module)
+          presets[name] = currentFilters
+          localStorage.setItem(
+            `buckingham-filter-presets-${module}`, 
+            JSON.stringify(presets)
+          )
+        }
+      },
+    },
+  },
+}))
+
+// Filter persistence utilities
+let persistenceTimeouts: Record<string, NodeJS.Timeout> = {}
+
+const persistFilters = (module: keyof FilterState, filters: any) => {
+  if (typeof window === 'undefined') return
+  
+  // Clear existing timeout
+  if (persistenceTimeouts[module]) {
+    clearTimeout(persistenceTimeouts[module])
+  }
+  
+  // Debounce persistence to avoid excessive localStorage writes
+  persistenceTimeouts[module] = setTimeout(() => {
+    try {
+      localStorage.setItem(`buckingham-filters-${module}`, JSON.stringify(filters))
+    } catch (error) {
+      console.warn(`Failed to persist ${module} filters:`, error)
+    }
+  }, 500)
+}
+
+// Filter initialization utilities
+export const initializeFilters = (state: FilterState): FilterState => {
+  if (typeof window === 'undefined') return state
+
+  try {
+    const modules = Object.keys(initialFilterState) as Array<keyof FilterState>
+    const initializedState = { ...state }
+
+    modules.forEach(module => {
+      const persistedFilters = localStorage.getItem(`buckingham-filters-${module}`)
+      if (persistedFilters) {
+        try {
+          const parsed = JSON.parse(persistedFilters)
+          initializedState[module] = { ...initialFilterState[module], ...parsed }
+        } catch (error) {
+          console.warn(`Failed to parse persisted ${module} filters:`, error)
+        }
+      }
+    })
+
+    return initializedState
+  } catch (error) {
+    console.warn('Failed to initialize filters from localStorage:', error)
+    return state
+  }
+}
+
+// Filter preset utilities
+export const getFilterPresets = (module: keyof FilterState): Record<string, any> => {
+  if (typeof window === 'undefined') return {}
+  
+  try {
+    const presets = localStorage.getItem(`buckingham-filter-presets-${module}`)
+    return presets ? JSON.parse(presets) : {}
+  } catch (error) {
+    console.warn(`Failed to load ${module} filter presets:`, error)
+    return {}
+  }
+}
+
+export const loadFilterPreset = (module: keyof FilterState, name: string) => {
+  const presets = getFilterPresets(module)
+  return presets[name] || null
+}
+
+export const deleteFilterPreset = (module: keyof FilterState, name: string) => {
+  if (typeof window === 'undefined') return
+  
+  const presets = getFilterPresets(module)
+  delete presets[name]
+  localStorage.setItem(`buckingham-filter-presets-${module}`, JSON.stringify(presets))
+}
+
+// Filter selectors
+export const filterSelectors = {
+  dealFilters: (state: BuckinghamVaultState) => state.filters.deals,
+  knowledgeFilters: (state: BuckinghamVaultState) => state.filters.knowledge,
+  exchangeFilters: (state: BuckinghamVaultState) => state.filters.exchange,
+  filterActions: (state: BuckinghamVaultState) => state.actions.filters,
+  
+  // Active filter counts
+  activeDealFilters: (state: BuckinghamVaultState) => {
+    const filters = state.filters.deals
+    let count = 0
+    if (filters.search) count++
+    if (filters.status.length > 0) count++
+    if (filters.type.length > 0) count++
+    if (filters.dateRange[0] || filters.dateRange[1]) count++
+    if (filters.forensicRating.length > 0) count++
+    return count
+  },
+  
+  activeKnowledgeFilters: (state: BuckinghamVaultState) => {
+    const filters = state.filters.knowledge
+    let count = 0
+    if (filters.search) count++
+    if (filters.category.length > 0) count++
+    if (filters.type.length > 0) count++
+    if (filters.tags.length > 0) count++
+    if (filters.featured) count++
+    return count
+  },
+  
+  activeExchangeFilters: (state: BuckinghamVaultState) => {
+    const filters = state.filters.exchange
+    let count = 0
+    if (filters.assetType.length > 0) count++
+    if (filters.forensicRating.length > 0) count++
+    if (filters.region.length > 0) count++
+    return count
+  },
+}
+
+// Filter validation utilities
+export const validateFilters = {
+  deals: (filters: Partial<FilterState['deals']>) => {
+    const errors: Record<string, string> = {}
+    
+    if (filters.valueRange) {
+      const [min, max] = filters.valueRange
+      if (min < 0) errors.valueRange = 'Minimum value cannot be negative'
+      if (max <= min) errors.valueRange = 'Maximum value must be greater than minimum'
+    }
+    
+    if (filters.dateRange) {
+      const [start, end] = filters.dateRange
+      if (start && end && start > end) {
+        errors.dateRange = 'Start date cannot be after end date'
+      }
+    }
+    
+    return errors
+  },
+  
+  knowledge: (filters: Partial<FilterState['knowledge']>) => {
+    const errors: Record<string, string> = {}
+    
+    if (filters.search && filters.search.length < 2) {
+      errors.search = 'Search term must be at least 2 characters'
+    }
+    
+    return errors
+  },
+  
+  exchange: (filters: Partial<FilterState['exchange']>) => {
+    const errors: Record<string, string> = {}
+    
+    if (filters.priceRange) {
+      const [min, max] = filters.priceRange
+      if (min < 0) errors.priceRange = 'Minimum price cannot be negative'
+      if (max <= min) errors.priceRange = 'Maximum price must be greater than minimum'
+    }
+    
+    return errors
+  },
+}
+
+// Filter transformation utilities
+export const transformFiltersForAPI = {
+  deals: (filters: FilterState['deals']) => ({
+    search: filters.search || undefined,
+    status: filters.status.length > 0 ? filters.status : undefined,
+    type: filters.type.length > 0 ? filters.type : undefined,
+    dateFrom: filters.dateRange[0]?.toISOString() || undefined,
+    dateTo: filters.dateRange[1]?.toISOString() || undefined,
+    minValue: filters.valueRange[0] > 0 ? filters.valueRange[0] : undefined,
+    maxValue: filters.valueRange[1] < 1000000000 ? filters.valueRange[1] : undefined,
+    forensicRating: filters.forensicRating.length > 0 ? filters.forensicRating : undefined,
+  }),
+  
+  knowledge: (filters: FilterState['knowledge']) => ({
+    search: filters.search || undefined,
+    category: filters.category.length > 0 ? filters.category[0] : undefined,
+    type: filters.type.length > 0 ? filters.type : undefined,
+    tags: filters.tags.length > 0 ? filters.tags : undefined,
+    featured: filters.featured || undefined,
+  }),
+  
+  exchange: (filters: FilterState['exchange']) => ({
+    assetType: filters.assetType.length > 0 ? filters.assetType[0] : undefined,
+    forensicRating: filters.forensicRating.length > 0 ? filters.forensicRating : undefined,
+    minPrice: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
+    maxPrice: filters.priceRange[1] < 1000000 ? filters.priceRange[1] : undefined,
+    region: filters.region.length > 0 ? filters.region : undefined,
+  }),
+}

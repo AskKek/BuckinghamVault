@@ -1,0 +1,332 @@
+/**
+ * Notifications State Slice
+ * Manages in-app notifications, alerts, and notification settings
+ */
+
+import { StateCreator } from 'zustand'
+import { immer } from 'zustand/middleware/immer'
+import { NotificationState, NotificationActions, BuckinghamVaultState } from '../types'
+import type { Notification } from '../types'
+import { nanoid } from 'nanoid'
+
+// Default notification state
+const initialNotificationState: NotificationState = {
+  notifications: [],
+  unreadCount: 0,
+  settings: {
+    emailNotifications: true,
+    pushNotifications: true,
+    dealAlerts: true,
+    priceAlerts: true,
+    systemAlerts: true,
+  },
+}
+
+// Notification slice type
+export interface NotificationSlice {
+  notifications: NotificationState
+  actions: {
+    notifications: NotificationActions
+  }
+}
+
+// Notification slice implementation
+export const createNotificationSlice: StateCreator<
+  BuckinghamVaultState,
+  [['zustand/immer', never]],
+  [],
+  NotificationSlice
+> = immer((set, get) => ({
+  notifications: initialNotificationState,
+
+  actions: {
+    notifications: {
+      addNotification: (notification) => {
+        const newNotification: Notification = {
+          ...notification,
+          id: nanoid(),
+          createdAt: new Date(),
+          isRead: false,
+        }
+
+        set((state) => {
+          state.notifications.notifications.unshift(newNotification)
+          state.notifications.unreadCount += 1
+          
+          // Auto-expire notifications if needed
+          if (newNotification.expiresAt) {
+            setTimeout(() => {
+              get().actions.notifications.removeNotification(newNotification.id)
+            }, newNotification.expiresAt.getTime() - Date.now())
+          }
+        })
+
+        // Persist notifications
+        persistNotifications(get().notifications.notifications)
+        
+        // Show browser notification if enabled and permission granted
+        showBrowserNotification(newNotification, get().notifications.settings)
+      },
+
+      markAsRead: (id) => {
+        set((state) => {
+          const notification = state.notifications.notifications.find(n => n.id === id)
+          if (notification && !notification.isRead) {
+            notification.isRead = true
+            state.notifications.unreadCount = Math.max(0, state.notifications.unreadCount - 1)
+          }
+        })
+        
+        persistNotifications(get().notifications.notifications)
+      },
+
+      markAllAsRead: () => {
+        set((state) => {
+          state.notifications.notifications.forEach(notification => {
+            notification.isRead = true
+          })
+          state.notifications.unreadCount = 0
+        })
+        
+        persistNotifications(get().notifications.notifications)
+      },
+
+      removeNotification: (id) => {
+        set((state) => {
+          const index = state.notifications.notifications.findIndex(n => n.id === id)
+          if (index !== -1) {
+            const notification = state.notifications.notifications[index]
+            if (!notification.isRead) {
+              state.notifications.unreadCount = Math.max(0, state.notifications.unreadCount - 1)
+            }
+            state.notifications.notifications.splice(index, 1)
+          }
+        })
+        
+        persistNotifications(get().notifications.notifications)
+      },
+
+      clearExpired: () => {
+        const now = new Date()
+        set((state) => {
+          const beforeCount = state.notifications.notifications.length
+          state.notifications.notifications = state.notifications.notifications.filter(
+            notification => !notification.expiresAt || notification.expiresAt > now
+          )
+          
+          // Recalculate unread count
+          state.notifications.unreadCount = state.notifications.notifications.filter(n => !n.isRead).length
+        })
+        
+        persistNotifications(get().notifications.notifications)
+      },
+
+      updateSettings: (settings) => {
+        set((state) => {
+          Object.assign(state.notifications.settings, settings)
+        })
+        
+        // Persist settings
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(
+            'buckingham-notification-settings',
+            JSON.stringify(get().notifications.settings)
+          )
+        }
+      },
+    },
+  },
+}))
+
+// Notification persistence utilities
+const persistNotifications = (notifications: Notification[]) => {
+  if (typeof window === 'undefined') return
+  
+  try {
+    // Only persist last 100 notifications to avoid localStorage bloat
+    const recentNotifications = notifications.slice(0, 100)
+    localStorage.setItem('buckingham-notifications', JSON.stringify(recentNotifications))
+  } catch (error) {
+    console.warn('Failed to persist notifications:', error)
+  }
+}
+
+// Browser notification utilities
+const showBrowserNotification = (notification: Notification, settings: NotificationState['settings']) => {
+  if (typeof window === 'undefined') return
+  
+  // Check if notifications are enabled and we have permission
+  if (!settings.pushNotifications || Notification.permission !== 'granted') return
+  
+  // Check type-specific settings
+  const typeSettingsMap = {
+    deal: settings.dealAlerts,
+    price: settings.priceAlerts,
+    system: settings.systemAlerts,
+    info: true,
+    success: true,
+    warning: true,
+    error: true,
+  }
+  
+  if (!typeSettingsMap[notification.type]) return
+  
+  try {
+    const browserNotification = new Notification(notification.title, {
+      body: notification.message,
+      icon: '/icons/buckingham-vault-icon.png',
+      badge: '/icons/buckingham-vault-badge.png',
+      tag: notification.id,
+      requireInteraction: notification.type === 'error' || notification.type === 'warning',
+    })
+    
+    // Auto-close after 5 seconds unless it requires interaction
+    if (!browserNotification.requireInteraction) {
+      setTimeout(() => browserNotification.close(), 5000)
+    }
+    
+    // Handle click to navigate to action URL
+    browserNotification.onclick = () => {
+      if (notification.actionUrl) {
+        window.focus()
+        window.location.href = notification.actionUrl
+      }
+      browserNotification.close()
+    }
+  } catch (error) {
+    console.warn('Failed to show browser notification:', error)
+  }
+}
+
+// Notification initialization utilities
+export const initializeNotifications = (state: NotificationState): NotificationState => {
+  if (typeof window === 'undefined') return state
+
+  try {
+    // Load persisted notifications
+    const persistedNotifications = localStorage.getItem('buckingham-notifications')
+    const persistedSettings = localStorage.getItem('buckingham-notification-settings')
+    
+    let notifications = state.notifications
+    let settings = state.settings
+    
+    if (persistedNotifications) {
+      notifications = JSON.parse(persistedNotifications).map((n: any) => ({
+        ...n,
+        createdAt: new Date(n.createdAt),
+        expiresAt: n.expiresAt ? new Date(n.expiresAt) : undefined,
+      }))
+    }
+    
+    if (persistedSettings) {
+      settings = { ...settings, ...JSON.parse(persistedSettings) }
+    }
+    
+    // Calculate unread count
+    const unreadCount = notifications.filter(n => !n.isRead).length
+    
+    return {
+      notifications,
+      unreadCount,
+      settings,
+    }
+  } catch (error) {
+    console.warn('Failed to initialize notifications from localStorage:', error)
+    return state
+  }
+}
+
+// Request notification permission
+export const requestNotificationPermission = async (): Promise<boolean> => {
+  if (typeof window === 'undefined' || !('Notification' in window)) return false
+  
+  if (Notification.permission === 'granted') return true
+  
+  if (Notification.permission === 'denied') return false
+  
+  try {
+    const permission = await Notification.requestPermission()
+    return permission === 'granted'
+  } catch (error) {
+    console.warn('Failed to request notification permission:', error)
+    return false
+  }
+}
+
+// Notification selectors
+export const notificationSelectors = {
+  notifications: (state: BuckinghamVaultState) => state.notifications.notifications,
+  unreadCount: (state: BuckinghamVaultState) => state.notifications.unreadCount,
+  settings: (state: BuckinghamVaultState) => state.notifications.settings,
+  notificationActions: (state: BuckinghamVaultState) => state.actions.notifications,
+  
+  // Recent notifications (last 10)
+  recentNotifications: (state: BuckinghamVaultState) => 
+    state.notifications.notifications.slice(0, 10),
+  
+  // Unread notifications
+  unreadNotifications: (state: BuckinghamVaultState) => 
+    state.notifications.notifications.filter(n => !n.isRead),
+  
+  // Notifications by type
+  notificationsByType: (state: BuckinghamVaultState, type: Notification['type']) =>
+    state.notifications.notifications.filter(n => n.type === type),
+}
+
+// Notification factory functions
+export const createNotification = {
+  success: (title: string, message: string, actionUrl?: string): Omit<Notification, 'id' | 'createdAt'> => ({
+    type: 'success',
+    title,
+    message,
+    isRead: false,
+    actionUrl,
+  }),
+  
+  error: (title: string, message: string, actionUrl?: string): Omit<Notification, 'id' | 'createdAt'> => ({
+    type: 'error',
+    title,
+    message,
+    isRead: false,
+    actionUrl,
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+  }),
+  
+  deal: (title: string, message: string, dealId: string): Omit<Notification, 'id' | 'createdAt'> => ({
+    type: 'deal',
+    title,
+    message,
+    isRead: false,
+    actionUrl: `/vault/deals/${dealId}`,
+    metadata: { dealId },
+  }),
+  
+  price: (asset: string, price: number, change: number): Omit<Notification, 'id' | 'createdAt'> => ({
+    type: 'price',
+    title: `${asset} Price Alert`,
+    message: `${asset} is now $${price.toLocaleString()} (${change > 0 ? '+' : ''}${change.toFixed(2)}%)`,
+    isRead: false,
+    actionUrl: '/vault/exchange',
+    metadata: { asset, price, change },
+    expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+  }),
+  
+  system: (title: string, message: string): Omit<Notification, 'id' | 'createdAt'> => ({
+    type: 'system',
+    title,
+    message,
+    isRead: false,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+  }),
+}
+
+// Notification cleanup utility
+export const cleanupNotifications = () => {
+  if (typeof window === 'undefined') return
+  
+  // Clean up expired notifications every hour
+  setInterval(() => {
+    // This would be called from the store
+    // get().actions.notifications.clearExpired()
+  }, 60 * 60 * 1000)
+}

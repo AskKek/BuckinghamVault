@@ -1,0 +1,184 @@
+/**
+ * Navigation State Slice
+ * Manages application navigation, sidebar, breadcrumbs, and routing state
+ */
+
+import { StateCreator } from 'zustand'
+import { immer } from 'zustand/middleware/immer'
+import { NavigationState, NavigationActions, BuckinghamVaultState } from '../types'
+
+// Default navigation state
+const initialNavigationState: NavigationState = {
+  currentModule: 'deals',
+  sidebarCollapsed: false,
+  breadcrumbs: [],
+  activeTab: undefined,
+}
+
+// Navigation slice type
+export interface NavigationSlice {
+  navigation: NavigationState
+  actions: {
+    navigation: NavigationActions
+  }
+}
+
+// Navigation slice implementation
+export const createNavigationSlice: StateCreator<
+  BuckinghamVaultState,
+  [['zustand/immer', never]],
+  [],
+  NavigationSlice
+> = immer((set, get) => ({
+  navigation: initialNavigationState,
+
+  actions: {
+    navigation: {
+      setCurrentModule: (module) => {
+        set((state) => {
+          state.navigation.currentModule = module
+          
+          // Auto-generate breadcrumbs based on module
+          const moduleLabels = {
+            deals: 'Deal Tracker',
+            jeeves: 'Jeeves AI',
+            knowledge: 'Knowledge Center',
+            exchange: 'Brightpool Exchange',
+            analytics: 'Analytics Dashboard',
+          }
+          
+          state.navigation.breadcrumbs = [
+            { label: 'Vault', href: '/vault' },
+            { label: moduleLabels[module] }
+          ]
+        })
+        
+        // Persist current module
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('buckingham-nav-module', module)
+        }
+      },
+
+      toggleSidebar: () => {
+        set((state) => {
+          state.navigation.sidebarCollapsed = !state.navigation.sidebarCollapsed
+        })
+        
+        // Persist sidebar state
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(
+            'buckingham-nav-sidebar-collapsed', 
+            JSON.stringify(get().navigation.sidebarCollapsed)
+          )
+        }
+      },
+
+      setBreadcrumbs: (breadcrumbs) => {
+        set((state) => {
+          state.navigation.breadcrumbs = breadcrumbs
+        })
+      },
+
+      setActiveTab: (tab) => {
+        set((state) => {
+          state.navigation.activeTab = tab
+        })
+      },
+    },
+  },
+}))
+
+// Navigation initialization utilities
+export const initializeNavigation = (state: NavigationState): NavigationState => {
+  if (typeof window === 'undefined') return state
+
+  try {
+    const persistedModule = localStorage.getItem('buckingham-nav-module')
+    const persistedSidebarCollapsed = localStorage.getItem('buckingham-nav-sidebar-collapsed')
+
+    return {
+      ...state,
+      currentModule: (persistedModule as NavigationState['currentModule']) || state.currentModule,
+      sidebarCollapsed: persistedSidebarCollapsed ? JSON.parse(persistedSidebarCollapsed) : state.sidebarCollapsed,
+    }
+  } catch (error) {
+    console.warn('Failed to initialize navigation from localStorage:', error)
+    return state
+  }
+}
+
+// Navigation selectors
+export const navigationSelectors = {
+  currentModule: (state: BuckinghamVaultState) => state.navigation.currentModule,
+  sidebarCollapsed: (state: BuckinghamVaultState) => state.navigation.sidebarCollapsed,
+  breadcrumbs: (state: BuckinghamVaultState) => state.navigation.breadcrumbs,
+  activeTab: (state: BuckinghamVaultState) => state.navigation.activeTab,
+  navigationActions: (state: BuckinghamVaultState) => state.actions.navigation,
+}
+
+// Module configuration
+export const moduleConfig = {
+  deals: {
+    label: 'Deal Tracker',
+    icon: 'FileText',
+    href: '/vault/deals',
+    description: 'Manage transactions and settlements',
+    color: 'blue',
+    tabs: ['overview', 'active', 'completed', 'analytics']
+  },
+  jeeves: {
+    label: 'Jeeves AI',
+    icon: 'Bot',
+    href: '/vault/jeeves',
+    description: 'AI-powered analysis and insights',
+    color: 'purple',
+    tabs: ['chat', 'analysis', 'insights']
+  },
+  knowledge: {
+    label: 'Knowledge Center',
+    icon: 'BookOpen',
+    href: '/vault/knowledge',
+    description: 'Resources and documentation',
+    color: 'green',
+    tabs: ['library', 'documents', 'templates', 'discussions']
+  },
+  exchange: {
+    label: 'Brightpool Exchange',
+    icon: 'TrendingUp',
+    href: '/vault/exchange',
+    description: 'Trading and market data',
+    color: 'orange',
+    tabs: ['trading', 'orderbook', 'history', 'analytics']
+  },
+  analytics: {
+    label: 'Analytics',
+    icon: 'BarChart3',
+    href: '/vault/analytics',
+    description: 'Performance metrics and reports',
+    color: 'indigo',
+    tabs: ['dashboard', 'reports', 'metrics', 'insights']
+  },
+} as const
+
+// Navigation utilities
+export const getModuleConfig = (module: NavigationState['currentModule']) => {
+  return moduleConfig[module]
+}
+
+export const getModulePath = (module: NavigationState['currentModule'], tab?: string) => {
+  const config = moduleConfig[module]
+  if (tab && config.tabs.includes(tab)) {
+    return `${config.href}?tab=${tab}`
+  }
+  return config.href
+}
+
+export const isActiveModule = (current: NavigationState['currentModule'], target: NavigationState['currentModule']) => {
+  return current === target
+}
+
+export const getNavigationClasses = (navigation: NavigationState) => ({
+  sidebarWidth: navigation.sidebarCollapsed ? 'w-16' : 'w-64',
+  contentMargin: navigation.sidebarCollapsed ? 'ml-16' : 'ml-64',
+  sidebarTransition: 'transition-all duration-300 ease-in-out',
+})

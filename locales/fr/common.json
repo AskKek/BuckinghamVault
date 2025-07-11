@@ -1,0 +1,107 @@
+{
+  "site": {
+    "title": "The Buckingham Vault",
+    "tagline": "Gestion Privée d'Actifs Numériques",
+    "description": "Où la Souveraineté Numérique Rencontre l'Excellence de la Richesse Privée"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "analytics": "Analyses",
+    "services": "Services",
+    "about": "À propos",
+    "contact": "Contact",
+    "language": "Langue"
+  },
+  "hero": {
+    "title": "The Buckingham Vault",
+    "subtitle": "Gestion Privée d'Actifs Numériques",
+    "description": "Où la Souveraineté Numérique Rencontre l'Excellence de la Richesse Privée",
+    "cta": {
+      "primary": "Explorer les Analyses",
+      "secondary": "En savoir plus"
+    }
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "Connectez-vous avec nos Spécialistes de la Richesse",
+    "form": {
+      "name": "Nom complet",
+      "email": "Adresse e-mail",
+      "company": "Entreprise/Organisation",
+      "title": "Titre/Position",
+      "phone": "Numéro de téléphone",
+      "message": "Message",
+      "submit": "Soumettre une Demande Confidentielle",
+      "submitting": "Soumission de la Demande Sécurisée...",
+      "success": "Merci !",
+      "successMessage": "Votre demande a été reçue. L'un de nos conseillers seniors vous contactera dans les 24 heures.",
+      "required": "Requis",
+      "optional": "Optionnel"
+    },
+    "privacy": {
+      "consent": "J'accepte la Politique de Confidentialité et consens au traitement de mes données personnelles aux fins de cette demande.",
+      "marketing": "Je souhaite recevoir des mises à jour sur les services et les perspectives du marché (optionnel)"
+    }
+  },
+  "analytics": {
+    "title": "BV Analytics",
+    "subtitle": "Plateforme d'Intelligence de Marché Institutionnelle",
+    "features": {
+      "realTime": "Données en Temps Réel",
+      "advanced": "Analyses Avancées",
+      "secure": "Sécurité Bancaire",
+      "global": "Marchés Mondiaux"
+    }
+  },
+  "common": {
+    "loading": "Chargement",
+    "error": "Erreur",
+    "tryAgain": "Réessayer",
+    "goHome": "Aller à l'accueil",
+    "backToHome": "Retour à l'accueil",
+    "offline": "Vous êtes hors ligne",
+    "online": "Vous êtes en ligne",
+    "comingSoon": "Bientôt disponible",
+    "learnMore": "En savoir plus",
+    "getStarted": "Commencer",
+    "readMore": "Lire plus",
+    "close": "Fermer",
+    "open": "Ouvrir",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "export": "Exporter",
+    "import": "Importer",
+    "download": "Télécharger",
+    "upload": "Téléverser"
+  },
+  "time": {
+    "now": "maintenant",
+    "today": "aujourd'hui",
+    "yesterday": "hier",
+    "tomorrow": "demain",
+    "thisWeek": "cette semaine",
+    "lastWeek": "la semaine dernière",
+    "nextWeek": "la semaine prochaine",
+    "thisMonth": "ce mois",
+    "lastMonth": "le mois dernier",
+    "nextMonth": "le mois prochain",
+    "thisYear": "cette année",
+    "lastYear": "l'année dernière",
+    "nextYear": "l'année prochaine"
+  },
+  "errors": {
+    "pageNotFound": "Page Non Trouvée",
+    "somethingWentWrong": "Quelque chose s'est mal passé",
+    "networkError": "Erreur de Réseau",
+    "serverError": "Erreur de Serveur",
+    "validationError": "Erreur de Validation",
+    "unauthorized": "Non Autorisé",
+    "forbidden": "Interdit",
+    "tooManyRequests": "Trop de Requêtes"
+  }
+}

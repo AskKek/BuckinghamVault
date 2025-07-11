@@ -1,0 +1,107 @@
+{
+  "site": {
+    "title": "The Buckingham Vault",
+    "tagline": "Private Digital Asset Wealth Management",
+    "description": "Where Digital Sovereignty Meets Private Wealth Excellence"
+  },
+  "navigation": {
+    "home": "Home",
+    "analytics": "Analytics",
+    "services": "Services",
+    "about": "About",
+    "contact": "Contact",
+    "language": "Language"
+  },
+  "hero": {
+    "title": "The Buckingham Vault",
+    "subtitle": "Private Digital Asset Wealth Management",
+    "description": "Where Digital Sovereignty Meets Private Wealth Excellence",
+    "cta": {
+      "primary": "Explore Analytics",
+      "secondary": "Learn More"
+    }
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Connect with Our Wealth Specialists",
+    "form": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "company": "Company/Organization",
+      "title": "Title/Position",
+      "phone": "Phone Number",
+      "message": "Message",
+      "submit": "Submit Confidential Inquiry",
+      "submitting": "Submitting Secure Inquiry...",
+      "success": "Thank You!",
+      "successMessage": "Your inquiry has been received. One of our senior advisors will contact you within 24 hours.",
+      "required": "Required",
+      "optional": "Optional"
+    },
+    "privacy": {
+      "consent": "I agree to the Privacy Policy and consent to the processing of my personal data for the purpose of this inquiry.",
+      "marketing": "I would like to receive updates about services and market insights (optional)"
+    }
+  },
+  "analytics": {
+    "title": "BV Analytics",
+    "subtitle": "Institutional Market Intelligence Platform",
+    "features": {
+      "realTime": "Real-Time Data",
+      "advanced": "Advanced Analytics",
+      "secure": "Bank-Grade Security",
+      "global": "Global Markets"
+    }
+  },
+  "common": {
+    "loading": "Loading",
+    "error": "Error",
+    "tryAgain": "Try Again",
+    "goHome": "Go Home",
+    "backToHome": "Back to Home",
+    "offline": "You're Offline",
+    "online": "You're Online",
+    "comingSoon": "Coming Soon",
+    "learnMore": "Learn More",
+    "getStarted": "Get Started",
+    "readMore": "Read More",
+    "close": "Close",
+    "open": "Open",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "export": "Export",
+    "import": "Import",
+    "download": "Download",
+    "upload": "Upload"
+  },
+  "time": {
+    "now": "now",
+    "today": "today",
+    "yesterday": "yesterday",
+    "tomorrow": "tomorrow",
+    "thisWeek": "this week",
+    "lastWeek": "last week",
+    "nextWeek": "next week",
+    "thisMonth": "this month",
+    "lastMonth": "last month",
+    "nextMonth": "next month",
+    "thisYear": "this year",
+    "lastYear": "last year",
+    "nextYear": "next year"
+  },
+  "errors": {
+    "pageNotFound": "Page Not Found",
+    "somethingWentWrong": "Something went wrong",
+    "networkError": "Network Error",
+    "serverError": "Server Error",
+    "validationError": "Validation Error",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "tooManyRequests": "Too Many Requests"
+  }
+}

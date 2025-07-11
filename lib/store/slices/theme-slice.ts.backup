@@ -1,0 +1,226 @@
+/**
+ * Theme State Slice
+ * Manages application theme, appearance, and accessibility settings
+ */
+
+import { StateCreator } from 'zustand'
+import { immer } from 'zustand/middleware/immer'
+import { ThemeState, ThemeActions, BuckinghamVaultState } from '../types'
+
+// Default theme state
+const initialThemeState: ThemeState = {
+  isDarkMode: true, // Buckingham Vault defaults to dark luxury theme
+  primaryColor: 'gold',
+  fontScale: 'medium',
+  reducedMotion: false,
+  highContrast: false,
+}
+
+// Theme slice type
+export interface ThemeSlice {
+  theme: ThemeState
+  actions: {
+    theme: ThemeActions
+  }
+}
+
+// Theme slice implementation
+export const createThemeSlice: StateCreator<
+  BuckinghamVaultState,
+  [['zustand/immer', never]],
+  [],
+  ThemeSlice
+> = immer((set, get) => ({
+  theme: initialThemeState,
+
+  actions: {
+    theme: {
+      toggleDarkMode: () => {
+        set((state) => {
+          state.theme.isDarkMode = !state.theme.isDarkMode
+        })
+        
+        // Persist to localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('buckingham-theme-dark', JSON.stringify(get().theme.isDarkMode))
+        }
+      },
+
+      setPrimaryColor: (color) => {
+        set((state) => {
+          state.theme.primaryColor = color
+        })
+        
+        // Persist to localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('buckingham-theme-color', color)
+        }
+      },
+
+      setFontScale: (scale) => {
+        set((state) => {
+          state.theme.fontScale = scale
+        })
+        
+        // Apply font scale to document
+        if (typeof window !== 'undefined') {
+          const root = document.documentElement
+          const scaleMap = { small: '0.875', medium: '1', large: '1.125' }
+          root.style.setProperty('--font-scale', scaleMap[scale])
+          localStorage.setItem('buckingham-theme-font-scale', scale)
+        }
+      },
+
+      toggleReducedMotion: () => {
+        set((state) => {
+          state.theme.reducedMotion = !state.theme.reducedMotion
+        })
+        
+        // Apply reduced motion preference
+        if (typeof window !== 'undefined') {
+          const root = document.documentElement
+          const reducedMotion = get().theme.reducedMotion
+          root.style.setProperty('--motion-scale', reducedMotion ? '0' : '1')
+          localStorage.setItem('buckingham-theme-reduced-motion', JSON.stringify(reducedMotion))
+        }
+      },
+
+      toggleHighContrast: () => {
+        set((state) => {
+          state.theme.highContrast = !state.theme.highContrast
+        })
+        
+        // Apply high contrast mode
+        if (typeof window !== 'undefined') {
+          const root = document.documentElement
+          const highContrast = get().theme.highContrast
+          if (highContrast) {
+            root.classList.add('high-contrast')
+          } else {
+            root.classList.remove('high-contrast')
+          }
+          localStorage.setItem('buckingham-theme-high-contrast', JSON.stringify(highContrast))
+        }
+      },
+
+      resetTheme: () => {
+        set((state) => {
+          state.theme = { ...initialThemeState }
+        })
+        
+        // Clear localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('buckingham-theme-dark')
+          localStorage.removeItem('buckingham-theme-color')
+          localStorage.removeItem('buckingham-theme-font-scale')
+          localStorage.removeItem('buckingham-theme-reduced-motion')
+          localStorage.removeItem('buckingham-theme-high-contrast')
+          
+          // Reset document properties
+          const root = document.documentElement
+          root.style.removeProperty('--font-scale')
+          root.style.removeProperty('--motion-scale')
+          root.classList.remove('high-contrast')
+        }
+      },
+    },
+  },
+}))
+
+// Theme initialization utilities
+export const initializeTheme = (state: ThemeState): ThemeState => {
+  if (typeof window === 'undefined') return state
+
+  try {
+    // Load persisted theme preferences
+    const persistedDarkMode = localStorage.getItem('buckingham-theme-dark')
+    const persistedColor = localStorage.getItem('buckingham-theme-color')
+    const persistedFontScale = localStorage.getItem('buckingham-theme-font-scale')
+    const persistedReducedMotion = localStorage.getItem('buckingham-theme-reduced-motion')
+    const persistedHighContrast = localStorage.getItem('buckingham-theme-high-contrast')
+
+    const initializedState = {
+      ...state,
+      isDarkMode: persistedDarkMode ? JSON.parse(persistedDarkMode) : state.isDarkMode,
+      primaryColor: (persistedColor as ThemeState['primaryColor']) || state.primaryColor,
+      fontScale: (persistedFontScale as ThemeState['fontScale']) || state.fontScale,
+      reducedMotion: persistedReducedMotion ? JSON.parse(persistedReducedMotion) : state.reducedMotion,
+      highContrast: persistedHighContrast ? JSON.parse(persistedHighContrast) : state.highContrast,
+    }
+
+    // Apply theme to document
+    applyThemeToDocument(initializedState)
+
+    return initializedState
+  } catch (error) {
+    console.warn('Failed to initialize theme from localStorage:', error)
+    return state
+  }
+}
+
+// Apply theme properties to document
+export const applyThemeToDocument = (theme: ThemeState) => {
+  if (typeof window === 'undefined') return
+
+  const root = document.documentElement
+
+  // Dark mode
+  if (theme.isDarkMode) {
+    root.classList.add('dark')
+  } else {
+    root.classList.remove('dark')
+  }
+
+  // Primary color (CSS custom properties)
+  const colorMap = {
+    gold: { primary: '#D4AF37', secondary: '#F7E98E' },
+    platinum: { primary: '#E5E4E2', secondary: '#F8F8FF' },
+    navy: { primary: '#1B365D', secondary: '#2E5984' },
+  }
+  
+  const colors = colorMap[theme.primaryColor]
+  root.style.setProperty('--color-primary', colors.primary)
+  root.style.setProperty('--color-secondary', colors.secondary)
+
+  // Font scale
+  const scaleMap = { small: '0.875', medium: '1', large: '1.125' }
+  root.style.setProperty('--font-scale', scaleMap[theme.fontScale])
+
+  // Reduced motion
+  root.style.setProperty('--motion-scale', theme.reducedMotion ? '0' : '1')
+
+  // High contrast
+  if (theme.highContrast) {
+    root.classList.add('high-contrast')
+  } else {
+    root.classList.remove('high-contrast')
+  }
+}
+
+// Theme selectors for components
+export const themeSelectors = {
+  isDarkMode: (state: BuckinghamVaultState) => state.theme.isDarkMode,
+  primaryColor: (state: BuckinghamVaultState) => state.theme.primaryColor,
+  fontScale: (state: BuckinghamVaultState) => state.theme.fontScale,
+  reducedMotion: (state: BuckinghamVaultState) => state.theme.reducedMotion,
+  highContrast: (state: BuckinghamVaultState) => state.theme.highContrast,
+  themeActions: (state: BuckinghamVaultState) => state.actions.theme,
+}
+
+// CSS class utilities for components
+export const getThemeClasses = (theme: ThemeState) => ({
+  primary: theme.primaryColor === 'gold' ? 'text-gold' : 
+           theme.primaryColor === 'platinum' ? 'text-platinum' : 'text-navy',
+  
+  background: theme.isDarkMode ? 'bg-navy' : 'bg-white',
+  
+  surface: theme.isDarkMode ? 'bg-navy-light' : 'bg-gray-50',
+  
+  text: theme.isDarkMode ? 'text-white' : 'text-gray-900',
+  
+  border: theme.isDarkMode ? 'border-gold/20' : 'border-gray-200',
+  
+  motion: theme.reducedMotion ? 'motion-reduce' : '',
+  
+  contrast: theme.highContrast ? 'high-contrast' : '',
+})
