@@ -11,9 +11,7 @@ import {
   FileText, 
   Users,
   ArrowUpRight,
-  ArrowDownRight,
-  Clock,
-  CheckCircle
+  ArrowDownRight
 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'

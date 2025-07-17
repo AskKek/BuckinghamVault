@@ -8,7 +8,8 @@ import { SectionHeader } from "../shared/SectionHeader"
 import { AnimatedCard } from "../shared/AnimatedCard"
 import { 
   useDeviceDetection,
-  staggerChildVariants 
+  staggerChildVariants,
+  generateDeterministicParticles
 } from "@/lib/animation-utils"
 import { 
   announceToScreenReader 
@@ -54,15 +55,8 @@ export function LeadershipSection({ partners }: LeadershipSectionProps) {
 
   useEffect(() => {
     setIsClient(true)
-    // Enhanced floating particles for premium atmosphere
-    setBackgroundParticles(Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 3,
-      duration: 6 + Math.random() * 4,
-      size: Math.random() * 2 + 1,
-    })))
+    // Enhanced floating particles for premium atmosphere - using deterministic values to prevent hydration mismatch
+    setBackgroundParticles(generateDeterministicParticles(15, 42)) // Using seed 42 for consistency
   }, [])
 
   return (
@@ -77,7 +71,7 @@ export function LeadershipSection({ partners }: LeadershipSectionProps) {
     >
       <div ref={ref} className="max-w-6xl mx-auto px-4 md:px-8 relative">
         {/* Enhanced floating particles - desktop only */}
-        {isClient && !isMobileOrTablet && (
+        {isClient && !isMobileOrTablet && backgroundParticles.length > 0 && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             {backgroundParticles.map((particle) => (
               <motion.div
@@ -87,6 +81,7 @@ export function LeadershipSection({ partners }: LeadershipSectionProps) {
                   left: `${particle.left}%`,
                   top: `${particle.top}%`,
                 }}
+                initial={{ opacity: 0 }}
                 animate={{
                   opacity: [0.2, 0.7, 0.2],
                   scale: [0.5, 1, 0.5],
@@ -309,15 +304,15 @@ export function LeadershipSection({ partners }: LeadershipSectionProps) {
                             </div>
 
                             {/* Enhanced floating particles */}
-                            {isHovered && !isMobileOrTablet && (
+                            {isHovered && !isMobileOrTablet && isClient && (
                               <>
                                 {[...Array(6)].map((_, i) => (
                                   <motion.div
                                     key={i}
                                     className="absolute w-1.5 h-1.5 bg-gold/70 rounded-full"
                                     style={{
-                                      left: `${Math.random() * 100}%`,
-                                      top: `${Math.random() * 100}%`,
+                                      left: `${(i * 15 + 10) % 80 + 10}%`, // Deterministic positioning
+                                      top: `${(i * 12 + 20) % 60 + 20}%`,
                                     }}
                                     animate={{
                                       y: [-30, -60],

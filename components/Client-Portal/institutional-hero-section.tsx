@@ -88,7 +88,7 @@ export function InstitutionalHeroSection() {
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-30 max-w-7xl mx-auto px-6 lg:px-8 text-center">
+        <div className="relative z-30 max-w-7xl mx-auto px-6 lg:px-8 text-center pt-24 md:pt-32">
           {/* Buckingham Vault Icon with Animation */}
           <motion.div
             className="flex justify-center mb-8"

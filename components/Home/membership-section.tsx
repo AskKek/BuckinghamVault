@@ -4,7 +4,7 @@ import { motion, useInView } from "framer-motion"
 import { useRef, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Crown, Users, Calendar, Sparkles, Star, Shield, Zap } from "lucide-react"
-import { useDeviceDetection, prefersReducedMotion } from "@/lib/animation-utils"
+import { useDeviceDetection, prefersReducedMotion, generateDeterministicParticles } from "@/lib/animation-utils"
 import Link from "next/link"
 
 interface MembershipSectionProps {
@@ -31,16 +31,8 @@ export function MembershipSection({ benefits }: MembershipSectionProps) {
 
   useEffect(() => {
     setIsClient(true)
-    // Enhanced floating particles for premium atmosphere
-    setBackgroundParticles(Array.from({ length: 22 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 7,
-      duration: 14 + Math.random() * 12,
-      size: Math.random() * 1.4 + 0.6,
-      opacity: Math.random() * 0.35 + 0.15,
-    })))
+    // Enhanced floating particles for premium atmosphere - using deterministic values
+    setBackgroundParticles(generateDeterministicParticles(22, 601)) // Using seed 601 for membership section
   }, [])
 
   return (

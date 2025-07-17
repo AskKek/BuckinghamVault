@@ -5,6 +5,7 @@ import "./globals.css"
 import { cn } from "@/lib/utils"
 import { organizationSchema, websiteSchema } from "@/lib/structured-data"
 import { ProviderStack } from "@/components/Core"
+import { CriticalResourcePreloader } from "@/components/Core/ImagePreloader"
 
 // Font configuration - Premium typography for institutional clients
 const poppins = Poppins({
@@ -119,6 +120,7 @@ export default function RootLayout({
         lato.variable, 
         playfairDisplay.variable
       )}>
+        <CriticalResourcePreloader />
         <ProviderStack variant="root" enableAnalytics={false} enableStore={false}>
           {children}
         </ProviderStack>

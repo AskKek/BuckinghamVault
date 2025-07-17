@@ -1,7 +1,7 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { TrendingUp, TrendingDown, Crown, Star, Shield, Sparkles } from "lucide-react"
+import { TrendingUp, TrendingDown, Crown, Star, Shield, Sparkles, BarChart3, Eye, Zap } from "lucide-react"
 import { useState, useEffect } from "react"
 import { 
   getGoldenTextGradient, 
@@ -9,6 +9,7 @@ import {
   getGoldenShimmerClasses,
   THEME_ANIMATIONS 
 } from "@/lib/theme"
+import TradingViewModal from "./TradingViewModal"
 
 interface CryptoData {
   name: string
@@ -323,6 +324,8 @@ export default function EnhancedCryptoTicker() {
   const [isMobile, setIsMobile] = useState(false)
   const [displayCount, setDisplayCount] = useState(8)
   const [isClient, setIsClient] = useState(false)
+  const [selectedChart, setSelectedChart] = useState<CryptoData | null>(null)
+  const [isChartModalOpen, setIsChartModalOpen] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -354,6 +357,17 @@ export default function EnhancedCryptoTicker() {
       window.removeEventListener("resize", checkMobile)
     }
   }, [])
+
+  // Chart modal functions
+  const openChart = (crypto: CryptoData) => {
+    setSelectedChart(crypto)
+    setIsChartModalOpen(true)
+  }
+
+  const closeChart = () => {
+    setSelectedChart(null)
+    setIsChartModalOpen(false)
+  }
 
   // Real 2025 crypto market data
   const totalMarketCap = 3763000000000
@@ -490,7 +504,34 @@ export default function EnhancedCryptoTicker() {
                           <p className="text-xs text-white/60 font-light">{crypto.name}</p>
                         </div>
                       </div>
-                      <LuxurySparkline data={crypto.sparkline} isPositive={crypto.change24h >= 0} />
+                      <div className="flex items-center space-x-3">
+                        <LuxurySparkline data={crypto.sparkline} isPositive={crypto.change24h >= 0} />
+                        {/* Chart Button */}
+                        <motion.button
+                          onClick={() => openChart(crypto)}
+                          className="p-2 bg-gradient-to-br from-gold/20 to-gold/10 rounded-lg border border-gold/30 text-gold hover:bg-gold/20 hover:border-gold/50 transition-all group/chart"
+                          whileHover={!isMobile ? { 
+                            scale: 1.05,
+                            boxShadow: "0 10px 25px rgba(215, 147, 9, 0.2)"
+                          } : {}}
+                          whileTap={{ scale: 0.95 }}
+                          title={`Open ${crypto.symbol} Technical Chart`}
+                        >
+                          <BarChart3 className="w-4 h-4 group-hover/chart:scale-110 transition-transform" />
+                          <motion.div
+                            className="absolute -top-1 -right-1 w-2 h-2 bg-gold rounded-full opacity-0 group-hover/chart:opacity-100"
+                            animate={{ 
+                              scale: [0.8, 1.2, 0.8],
+                              opacity: [0.5, 1, 0.5]
+                            }}
+                            transition={{ 
+                              duration: 2, 
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }}
+                          />
+                        </motion.button>
+                      </div>
                     </div>
 
                     {/* Royal Price Display with Golden Shimmer */}
@@ -732,6 +773,18 @@ export default function EnhancedCryptoTicker() {
           </motion.div>
         </div>
       </div>
+
+      {/* TradingView Chart Modal */}
+      {selectedChart && (
+        <TradingViewModal
+          isOpen={isChartModalOpen}
+          onClose={closeChart}
+          symbol={selectedChart.symbol}
+          name={selectedChart.name}
+          currentPrice={selectedChart.price}
+          change24h={selectedChart.change24h}
+        />
+      )}
     </div>
   )
 }

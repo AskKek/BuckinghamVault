@@ -7,15 +7,13 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, Shield, Lock, Star, Crown, Globe, UserCheck, Handshake, Building } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { useIsClient } from "@/hooks/use-is-client"
+import { useDeviceDetection, prefersReducedMotion, generateDeterministicParticles } from "@/lib/animation-utils"
 
 export function ContactSection() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
-  const isMobile = useIsMobile()
-  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false)
-  const isClient = useIsClient()
+  const { isMobileOrTablet } = useDeviceDetection()
+  const [isClient, setIsClient] = useState(false)
   const [particles, setParticles] = useState<Array<{
     id: number;
     left: number;
@@ -25,29 +23,10 @@ export function ContactSection() {
   }>>([])
 
   useEffect(() => {
-    if (!isClient) return
-    
-    const checkScreenSize = () => {
-      setIsMobileOrTablet(window.innerWidth < 1025)
-    }
-
-    checkScreenSize()
-    window.addEventListener("resize", checkScreenSize)
-    return () => window.removeEventListener("resize", checkScreenSize)
-  }, [isClient])
-
-  useEffect(() => {
-    if (!isClient) return
-    
-    // Enhanced floating particles for premium atmosphere
-    setParticles(Array.from({ length: 8 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 3,
-      duration: 4 + Math.random() * 2,
-    })))
-  }, [isClient])
+    setIsClient(true)
+    // Enhanced floating particles for premium atmosphere - using deterministic values
+    setParticles(generateDeterministicParticles(8, 301)) // Using seed 301 for contact section
+  }, [])
 
   return (
     <section ref={ref} className="py-20 md:py-32 bg-gradient-to-b from-navy to-navy-dark relative overflow-hidden">
@@ -102,7 +81,7 @@ export function ContactSection() {
         </div>
 
         {/* Premium floating particles - desktop only */}
-        {isClient && !isMobileOrTablet && (
+        {isClient && !prefersReducedMotion() && !isMobileOrTablet && (
           <div className="absolute inset-0 pointer-events-none">
             {particles.map((particle) => (
               <motion.div

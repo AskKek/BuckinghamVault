@@ -4,7 +4,7 @@ import { Sparkles, Star, Crown, Shield } from "lucide-react"
 import { BuckinghamVaultIcon } from "../Custom-UI/buckingham-vault-icon"
 import { motion, useInView } from "framer-motion"
 import { useRef, useEffect, useState } from "react"
-import { useDeviceDetection, prefersReducedMotion } from "@/lib/animation-utils"
+import { useDeviceDetection, prefersReducedMotion, generateDeterministicParticles } from "@/lib/animation-utils"
 
 export function Footer() {
   const ref = useRef(null)
@@ -24,16 +24,8 @@ export function Footer() {
 
   useEffect(() => {
     setIsClient(true)
-    // Enhanced floating particles for premium atmosphere
-    setBackgroundParticles(Array.from({ length: 18 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 6,
-      duration: 12 + Math.random() * 8,
-      size: Math.random() * 1.2 + 0.6,
-      opacity: Math.random() * 0.3 + 0.1,
-    })))
+    // Enhanced floating particles for premium atmosphere - using deterministic values
+    setBackgroundParticles(generateDeterministicParticles(18, 901)) // Using seed 901 for footer section
   }, [])
 
   return (

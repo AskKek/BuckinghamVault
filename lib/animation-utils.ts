@@ -1,4 +1,5 @@
 import { Variants } from "framer-motion"
+import { useState, useEffect } from 'react'
 
 // Check if user prefers reduced motion
 export const prefersReducedMotion = () => {
@@ -8,21 +9,103 @@ export const prefersReducedMotion = () => {
   return false
 }
 
-// Device detection utilities
+// SSR-safe deterministic "random" number generator for animations
+// This creates predictable but varied values to prevent hydration mismatches
+export const deterministicRandom = (index: number, seed: number = 1) => {
+  const x = Math.sin(seed * index * 12.9898) * 43758.5453123
+  return x - Math.floor(x)
+}
+
+// Generate deterministic animation properties for particles/shapes
+export const generateDeterministicParticles = (count: number, seed: number = 1) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    left: deterministicRandom(i, seed) * 100,
+    top: deterministicRandom(i, seed + 1) * 100,
+    delay: deterministicRandom(i, seed + 2) * 3,
+    duration: 6 + deterministicRandom(i, seed + 3) * 4,
+    size: 0.5 + deterministicRandom(i, seed + 4) * 1.5,
+    opacity: 0.2 + deterministicRandom(i, seed + 5) * 0.6,
+    scale: 0.5 + deterministicRandom(i, seed + 6) * 0.5
+  }))
+}
+
+// Generate deterministic geometric shapes for complex animations
+export const generateDeterministicShapes = (count: number, seed: number = 1) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    left: deterministicRandom(i, seed) * 100,
+    top: deterministicRandom(i, seed + 1) * 100,
+    delay: deterministicRandom(i, seed + 2) * 6,
+    duration: 12 + deterministicRandom(i, seed + 3) * 8,
+    scale: 0.5 + deterministicRandom(i, seed + 4) * 0.5
+  }))
+}
+
+// Device detection utilities with SSR-safe hydration
 export const useDeviceDetection = () => {
-  if (typeof window === 'undefined') return { isMobile: false, isTablet: false, isDesktop: true }
-  
-  const width = window.innerWidth
-  const userAgent = navigator.userAgent.toLowerCase()
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
-  
-  return {
-    isMobile: width < 768,
-    isTablet: width >= 768 && width < 1024,
-    isDesktop: width >= 1024,
-    isTouchDevice,
-    isMobileOrTablet: width < 1024 || isTouchDevice
-  }
+  const [deviceInfo, setDeviceInfo] = useState({
+    isMobile: false,
+    isTablet: false,
+    isDesktop: true,
+    isTouchDevice: false,
+    isMobileOrTablet: false,
+    isLowEndDevice: false
+  })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    const updateDeviceInfo = () => {
+      const width = window.innerWidth
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+      
+      // Detect low-end devices based on various factors
+      const isLowEndDevice = (() => {
+        // Check hardware concurrency (CPU cores)
+        const cores = navigator.hardwareConcurrency || 1
+        if (cores <= 2) return true
+        
+        // Check memory (if available)
+        const memory = (navigator as any).deviceMemory
+        if (memory && memory <= 2) return true
+        
+        // Check user agent for known low-end devices
+        const userAgent = navigator.userAgent.toLowerCase()
+        const lowEndPatterns = [
+          'android 4', 'android 5', 'android 6',
+          'iphone os 9', 'iphone os 10', 'iphone os 11',
+          'cpu os 9', 'cpu os 10', 'cpu os 11'
+        ]
+        if (lowEndPatterns.some(pattern => userAgent.includes(pattern))) return true
+        
+        // Small screen + touch usually indicates mobile device with limited resources
+        if (width <= 480 && isTouchDevice) return true
+        
+        return false
+      })()
+      
+      setDeviceInfo({
+        isMobile: width < 768,
+        isTablet: width >= 768 && width < 1024,
+        isDesktop: width >= 1024,
+        isTouchDevice,
+        isMobileOrTablet: width < 1024 || isTouchDevice,
+        isLowEndDevice
+      })
+    }
+
+    // Initial detection
+    updateDeviceInfo()
+
+    // Add resize listener
+    window.addEventListener('resize', updateDeviceInfo)
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', updateDeviceInfo)
+  }, [])
+
+  return deviceInfo
 }
 
 // Standard animation variants for sections

@@ -9,7 +9,8 @@ import Image from "next/image"
 import { 
   useDeviceDetection,
   staggerChildVariants,
-  prefersReducedMotion 
+  prefersReducedMotion,
+  generateDeterministicParticles 
 } from "@/lib/animation-utils"
 import { 
   announceToScreenReader,
@@ -53,16 +54,8 @@ export function DifferentiatorsSection({ differentiators }: DifferentiatorsSecti
 
   useEffect(() => {
     setIsClient(true)
-    // Enhanced floating particles for premium atmosphere
-    setBackgroundParticles(Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 5,
-      duration: 10 + Math.random() * 8,
-      size: Math.random() * 1.2 + 0.6,
-      opacity: Math.random() * 0.3 + 0.2,
-    })))
+    // Enhanced floating particles for premium atmosphere - using deterministic values
+    setBackgroundParticles(generateDeterministicParticles(20, 1001)) // Using seed 1001 for differentiators section
   }, [])
 
   return (
@@ -300,7 +293,7 @@ export function DifferentiatorsSection({ differentiators }: DifferentiatorsSecti
                 return (
                   <motion.div
                     key={index}
-                    className={`group relative flex items-center gap-8 md:gap-16 ${!isEven && !isMobile ? "flex-row-reverse" : ""}`}
+                    className={`group relative flex items-center gap-8 md:gap-16 ${!isEven ? "md:flex-row-reverse" : ""}`}
                     initial={{ opacity: 0, y: 40, x: isEven ? -40 : 40 }}
                     animate={isInView ? { opacity: 1, y: 0, x: 0 } : { opacity: 0, y: 40, x: isEven ? -40 : 40 }}
                     transition={{ 
@@ -370,7 +363,7 @@ export function DifferentiatorsSection({ differentiators }: DifferentiatorsSecti
                     >
                       <motion.h3
                         id={`${diffId}-title`}
-                        className="text-3xl md:text-4xl lg:text-5xl font-light text-white leading-tight group-hover:text-gold transition-colors duration-500"
+                        className="text-3xl md:text-4xl lg:text-5xl font-light text-white leading-tight md:group-hover:text-gold transition-colors duration-500"
                         style={{ letterSpacing: '-0.02em', lineHeight: '0.95' }}
                         animate={{
                           scale: isHovered ? 1.02 : 1,

@@ -1,33 +1,19 @@
 # CLAUDE.md
 
-## Memory Bank Workflow (CRITICAL)
-1. **ALWAYS START BY READING MEMORY BANK**: Read ALL files in `memory-bank/` directory before any task
-2. **Reference Memory Bank Intelligence**: Use `.cursor/rules/memory-bank.mdc` for project patterns
-3. **Follow Documented Patterns**: Apply learned success/failure patterns from memory bank
-4. **Update Memory Bank**: Document significant changes and learnings
-
-## Memory Bank Files (READ FIRST)
-- `memory-bank/projectbrief.md` - Core mission and requirements
-- `memory-bank/productContext.md` - Why this exists and how it should work
-- `memory-bank/systemPatterns.md` - Architecture and technical decisions
-- `memory-bank/techContext.md` - Technologies and development setup
-- `memory-bank/activeContext.md` - Current work focus and recent changes
-- `memory-bank/progress.md` - Current status and known issues
-
 ## Standard Workflow
-1. **Memory Bank First**: Read ALL memory bank files to understand current state
-2. **Apply Intelligence**: Use patterns from `.cursor/rules/memory-bank.mdc`
-3. **Systematic Diagnosis**: For issues, methodically check each layer
-4. **Incremental Changes**: Make small, testable changes
-5. **Document Changes**: Update memory bank with significant modifications
-6. **Test Each Step**: Verify functionality after each change
-7. **Conservative Approach**: Avoid over-engineering or complex solutions
+1.    First think through the problem, read the codebase for relevant files, and write a plan to tasks/todo.md.
+2.    The plan should have a list of todo items that you can check off as you complete them
+3.    Before you begin working, check in with me and I will verify the plan.
+4.    Then, begin working on the todo items, marking them as complete as you go.
+5.    Please every step of the way just give me a high level explanation of what changes you made
+6.    Make every task and code change you do as simple as possible. We want to avoid making any massive or complex changes. Every change should impact as little code as possible. Everything is about simplicity.
+7.    Finally, add a review section to the todo.md file with a summary of the changes you made and any other relevant information.
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-
-Buckingham Vault is a high-end financial services website built with Next.js 15, React 19, and TypeScript. The project features a luxury design with custom WebGL shaders, extensive UI components, and a focus on performance and accessibility.
+0
+0Buckingham Vault is a high-end financial services website built with Next.js 15, React 19, and TypeScript. The project features a luxury design with custom WebGL shaders, extensive UI components, and a focus on performance and accessibility.
 
 ## Development Commands
 

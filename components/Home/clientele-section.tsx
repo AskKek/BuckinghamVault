@@ -10,7 +10,8 @@ import { AnimatedCard } from "../shared/AnimatedCard"
 import { 
   useDeviceDetection,
   staggerChildVariants,
-  prefersReducedMotion 
+  prefersReducedMotion,
+  generateDeterministicParticles
 } from "@/lib/animation-utils"
 import { 
   createImageAccessibilityProps,
@@ -49,16 +50,8 @@ export function ClienteleSection({ clientele }: ClienteleSectionProps) {
 
   useEffect(() => {
     setIsClient(true)
-    // Enhanced floating particles for premium atmosphere
-    setBackgroundParticles(Array.from({ length: 18 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 4,
-      duration: 8 + Math.random() * 6,
-      size: Math.random() * 1.5 + 0.8,
-      opacity: Math.random() * 0.4 + 0.2,
-    })))
+    // Enhanced floating particles for premium atmosphere - using deterministic values
+    setBackgroundParticles(generateDeterministicParticles(18, 123)) // Using seed 123 for consistency
   }, [])
 
   return (
@@ -287,12 +280,12 @@ export function ClienteleSection({ clientele }: ClienteleSectionProps) {
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
               transition={{ duration: 1, delay: 0.6 }}
             >
-              <div className="max-w-7xl w-full space-y-8 md:space-y-12">
+              <div className="max-w-7xl w-full space-y-12 md:space-y-16 lg:space-y-20">
                 <h3 id="clientele-grid" className="sr-only">Distinguished Clientele Categories</h3>
                 
                 {/* Top Row - 3 Cards */}
                 <div 
-                  className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 lg:gap-12"
+                  className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 lg:gap-10 xl:gap-12"
                   role="region"
                   aria-labelledby="clientele-grid"
                   aria-label="Top tier clientele categories"
@@ -328,9 +321,9 @@ export function ClienteleSection({ clientele }: ClienteleSectionProps) {
                           transition={{ duration: 0.5 }}
                         />
 
-                        {/* Premium Card - Larger Size */}
+                        {/* Premium Card - Improved Size */}
                         <motion.div
-                          className="relative h-64 md:h-72 lg:h-80 bg-gradient-to-br from-navy-light/40 to-navy-dark/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 lg:p-12 hover:border-gold/30 transition-all duration-500 overflow-hidden"
+                          className="relative min-h-[280px] md:min-h-[320px] lg:min-h-[360px] bg-gradient-to-br from-navy-light/40 to-navy-dark/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 lg:p-10 hover:border-gold/30 transition-all duration-500 overflow-hidden flex"
                           animate={{
                             y: isHovered ? -8 : 0,
                             scale: isHovered ? 1.02 : 1,
@@ -345,10 +338,10 @@ export function ClienteleSection({ clientele }: ClienteleSectionProps) {
                           <div className="absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-gold/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                           
                           {/* Premium content */}
-                          <div className="relative z-10 flex flex-col items-center justify-center h-full text-center space-y-6 md:space-y-8">
-                            {/* Enhanced Icon - Larger */}
+                          <div className="relative z-10 flex flex-col items-center justify-center w-full text-center space-y-4 md:space-y-6 lg:space-y-8">
+                            {/* Enhanced Icon - Optimized */}
                             <motion.div
-                              className="relative"
+                              className="relative flex-shrink-0"
                               animate={{
                                 scale: isHovered ? 1.2 : 1,
                                 rotate: isHovered ? 5 : 0,
@@ -356,14 +349,14 @@ export function ClienteleSection({ clientele }: ClienteleSectionProps) {
                               transition={{ duration: 0.3 }}
                             >
                               <div className="absolute inset-0 bg-gold/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300" />
-                              <div className="relative bg-gradient-to-br from-gold/20 to-gold/10 rounded-2xl p-4 md:p-5 group-hover:from-gold/30 group-hover:to-gold/20 transition-all duration-300">
-                                <Icon className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 text-gold group-hover:text-gold-light transition-colors duration-300" />
+                              <div className="relative bg-gradient-to-br from-gold/20 to-gold/10 rounded-2xl p-3 md:p-4 lg:p-5 group-hover:from-gold/30 group-hover:to-gold/20 transition-all duration-300">
+                                <Icon className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 text-gold group-hover:text-gold-light transition-colors duration-300" />
                               </div>
                             </motion.div>
 
-                            {/* Enhanced Title - Larger */}
+                            {/* Enhanced Title - Better Text Wrapping */}
                             <h4 
-                              className="text-xl md:text-2xl lg:text-3xl font-medium text-white group-hover:text-gold transition-colors duration-300 leading-tight px-2"
+                              className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-medium text-white md:group-hover:text-gold transition-colors duration-300 leading-snug px-2 flex-grow flex items-center justify-center"
                               style={{ letterSpacing: '-0.01em' }}
                             >
                               {client}
@@ -410,7 +403,7 @@ export function ClienteleSection({ clientele }: ClienteleSectionProps) {
                   role="region"
                   aria-label="Additional clientele categories"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 lg:gap-12 max-w-4xl w-full">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10 xl:gap-12 max-w-5xl w-full">
                     {clientele.slice(3, 5).map((client, index) => {
                       const actualIndex = index + 3
                       const Icon = clienteleIcons[actualIndex] || Shield
@@ -443,9 +436,9 @@ export function ClienteleSection({ clientele }: ClienteleSectionProps) {
                             transition={{ duration: 0.5 }}
                           />
 
-                          {/* Premium Card - Larger Size */}
+                          {/* Premium Card - Improved Size */}
                           <motion.div
-                            className="relative h-64 md:h-72 lg:h-80 bg-gradient-to-br from-navy-light/40 to-navy-dark/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 lg:p-12 hover:border-gold/30 transition-all duration-500 overflow-hidden"
+                            className="relative min-h-[280px] md:min-h-[320px] lg:min-h-[360px] bg-gradient-to-br from-navy-light/40 to-navy-dark/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 lg:p-10 hover:border-gold/30 transition-all duration-500 overflow-hidden flex"
                             animate={{
                               y: isHovered ? -8 : 0,
                               scale: isHovered ? 1.02 : 1,
@@ -460,10 +453,10 @@ export function ClienteleSection({ clientele }: ClienteleSectionProps) {
                             <div className="absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-gold/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             
                             {/* Premium content */}
-                            <div className="relative z-10 flex flex-col items-center justify-center h-full text-center space-y-6 md:space-y-8">
-                              {/* Enhanced Icon - Larger */}
+                            <div className="relative z-10 flex flex-col items-center justify-center w-full text-center space-y-4 md:space-y-6 lg:space-y-8">
+                              {/* Enhanced Icon - Optimized */}
                               <motion.div
-                                className="relative"
+                                className="relative flex-shrink-0"
                                 animate={{
                                   scale: isHovered ? 1.2 : 1,
                                   rotate: isHovered ? 5 : 0,
@@ -471,14 +464,14 @@ export function ClienteleSection({ clientele }: ClienteleSectionProps) {
                                 transition={{ duration: 0.3 }}
                               >
                                 <div className="absolute inset-0 bg-gold/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300" />
-                                <div className="relative bg-gradient-to-br from-gold/20 to-gold/10 rounded-2xl p-4 md:p-5 group-hover:from-gold/30 group-hover:to-gold/20 transition-all duration-300">
-                                  <Icon className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 text-gold group-hover:text-gold-light transition-colors duration-300" />
+                                <div className="relative bg-gradient-to-br from-gold/20 to-gold/10 rounded-2xl p-3 md:p-4 lg:p-5 group-hover:from-gold/30 group-hover:to-gold/20 transition-all duration-300">
+                                  <Icon className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 text-gold group-hover:text-gold-light transition-colors duration-300" />
                                 </div>
                               </motion.div>
 
-                              {/* Enhanced Title - Larger */}
+                              {/* Enhanced Title - Better Text Wrapping */}
                               <h4 
-                                className="text-xl md:text-2xl lg:text-3xl font-medium text-white group-hover:text-gold transition-colors duration-300 leading-tight px-2"
+                                className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-medium text-white md:group-hover:text-gold transition-colors duration-300 leading-snug px-2 flex-grow flex items-center justify-center"
                                 style={{ letterSpacing: '-0.01em' }}
                               >
                                 {client}

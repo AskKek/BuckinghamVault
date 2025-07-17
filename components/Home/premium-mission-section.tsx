@@ -6,7 +6,9 @@ import { Star, Sparkles, Crown, Globe, Shield } from "lucide-react"
 import { SectionWrapper } from "../shared/SectionWrapper"
 import { 
   useDeviceDetection,
-  prefersReducedMotion 
+  prefersReducedMotion,
+  generateDeterministicParticles,
+  generateDeterministicShapes 
 } from "@/lib/animation-utils"
 import Image from "next/image"
 
@@ -43,26 +45,10 @@ export function PremiumMissionSection({ title, statement, description, extended 
 
   useEffect(() => {
     setIsClient(true)
-    // Enhanced constellation of particles with sophisticated movement
-    setParticles(Array.from({ length: 24 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 4,
-      duration: 8 + Math.random() * 4,
-      size: Math.random() * 1.5 + 0.5,
-      opacity: Math.random() * 0.6 + 0.2,
-    })))
-
-    // Enhanced floating geometric shapes
-    setGeometricShapes(Array.from({ length: 6 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 6,
-      duration: 12 + Math.random() * 8,
-      scale: Math.random() * 0.5 + 0.5,
-    })))
+    // Enhanced constellation of particles with sophisticated movement - using deterministic values
+    setParticles(generateDeterministicParticles(24, 701)) // Using seed 701 for premium mission section
+    // Enhanced floating geometric shapes - using deterministic values
+    setGeometricShapes(generateDeterministicShapes(6, 801)) // Using seed 801 for geometric shapes
   }, [])
 
   return (

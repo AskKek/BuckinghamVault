@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { cn } from '@/lib/utils'
+import { useDeviceDetection } from '@/lib/animation-utils'
 
 interface InteractiveLiquidGoldShaderProps {
   className?: string
@@ -11,7 +12,7 @@ interface InteractiveLiquidGoldShaderProps {
 
 export function InteractiveLiquidGoldShader({ 
   className = '', 
-  quality = 'high',
+  quality: userQuality,
   enabled = true 
 }: InteractiveLiquidGoldShaderProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -20,9 +21,25 @@ export function InteractiveLiquidGoldShader({
   const animationRef = useRef<number | null>(null)
   const startTimeRef = useRef<number>(Date.now())
   
+  const { isMobileOrTablet, isLowEndDevice } = useDeviceDetection()
+  
+  // Smart quality detection based on device capabilities
+  const quality = useMemo(() => {
+    if (userQuality) return userQuality
+    
+    // Device-specific quality optimization
+    if (isLowEndDevice) return 'low'
+    if (isMobileOrTablet) return 'medium'
+    return 'high'
+  }, [userQuality, isMobileOrTablet, isLowEndDevice])
+  
   const [isClient, setIsClient] = useState(false)
   const [isWebGLSupported, setIsWebGLSupported] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
+  const [performanceMode, setPerformanceMode] = useState<'auto' | 'performance' | 'quality'>('auto')
+  const performanceTimerRef = useRef<number>(0)
+  const frameCountRef = useRef<number>(0)
+  const lastPerformanceCheckRef = useRef<number>(Date.now())
   
   // Mouse/touch state
   const mouseRef = useRef({ x: 0.5, y: 0.5 })
@@ -31,6 +48,23 @@ export function InteractiveLiquidGoldShader({
   const targetMouseStrengthRef = useRef(0)
   const clickPosRef = useRef({ x: 0.5, y: 0.5 })
   const clickTimeRef = useRef(999)
+  
+  // Adaptive quality settings based on performance
+  const getAdaptiveQuality = useMemo(() => {
+    const baseQuality = quality === 'high' ? 1.0 : quality === 'medium' ? 0.5 : 0.3
+    
+    // Reduce quality further in performance mode
+    if (performanceMode === 'performance') {
+      return Math.max(baseQuality * 0.7, 0.2)
+    }
+    
+    // Increase quality in quality mode (only on capable devices)
+    if (performanceMode === 'quality' && !isLowEndDevice) {
+      return Math.min(baseQuality * 1.2, 1.0)
+    }
+    
+    return baseQuality
+  }, [quality, performanceMode, isLowEndDevice])
 
   // Vertex shader source
   const vertexShaderSource = `#version 300 es
@@ -327,19 +361,50 @@ export function InteractiveLiquidGoldShader({
     handleResize()
     setIsLoading(false)
 
-    // Animation loop
+    // Performance monitoring for adaptive quality
+    const checkPerformance = () => {
+      frameCountRef.current++
+      const now = Date.now()
+      const timeDiff = now - lastPerformanceCheckRef.current
+      
+      // Check every 60 frames or 2 seconds
+      if (frameCountRef.current >= 60 || timeDiff >= 2000) {
+        const fps = (frameCountRef.current / timeDiff) * 1000
+        
+        // Auto-adjust quality based on performance
+        if (performanceMode === 'auto') {
+          if (fps < 30 && quality !== 'low') {
+            setPerformanceMode('performance')
+          } else if (fps > 55 && !isLowEndDevice && quality !== 'high') {
+            setPerformanceMode('quality')
+          }
+        }
+        
+        frameCountRef.current = 0
+        lastPerformanceCheckRef.current = now
+      }
+    }
+
+    // Animation loop with performance optimization
     const animate = () => {
       if (!gl || !program) return
 
+      const frameStart = performance.now()
       const currentTime = (Date.now() - startTimeRef.current) * 0.001
 
-      // Smooth mouse interpolation
-      mouseRef.current.x += (targetMouseRef.current.x - mouseRef.current.x) * 0.1
-      mouseRef.current.y += (targetMouseRef.current.y - mouseRef.current.y) * 0.1
-      mouseStrengthRef.current += (targetMouseStrengthRef.current - mouseStrengthRef.current) * 0.1
+      // Performance check (only on capable devices)
+      if (!isLowEndDevice) {
+        checkPerformance()
+      }
 
-      // Update click time
-      clickTimeRef.current += 0.016
+      // Smooth mouse interpolation (reduced on low-end devices)
+      const lerpFactor = isLowEndDevice ? 0.15 : 0.1
+      mouseRef.current.x += (targetMouseRef.current.x - mouseRef.current.x) * lerpFactor
+      mouseRef.current.y += (targetMouseRef.current.y - mouseRef.current.y) * lerpFactor
+      mouseStrengthRef.current += (targetMouseStrengthRef.current - mouseStrengthRef.current) * lerpFactor
+
+      // Update click time (slower on low-end devices)
+      clickTimeRef.current += isLowEndDevice ? 0.02 : 0.016
 
       // Clear and render
       gl.clearColor(0, 0, 0, 0)
@@ -347,14 +412,14 @@ export function InteractiveLiquidGoldShader({
 
       gl.useProgram(program)
 
-      // Set uniforms
+      // Set uniforms with adaptive quality
       gl.uniform2f(uniforms.resolution!, canvas.width, canvas.height)
       gl.uniform1f(uniforms.time!, currentTime)
       gl.uniform2f(uniforms.mouse!, mouseRef.current.x, mouseRef.current.y)
       gl.uniform1f(uniforms.mouseStrength!, mouseStrengthRef.current)
       gl.uniform2f(uniforms.clickPos!, clickPosRef.current.x, clickPosRef.current.y)
       gl.uniform1f(uniforms.clickTime!, clickTimeRef.current)
-      gl.uniform1f(uniforms.quality!, quality === 'high' ? 1.0 : quality === 'medium' ? 0.5 : 0.3)
+      gl.uniform1f(uniforms.quality!, getAdaptiveQuality)
 
       // Bind vertex buffer and draw
       gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
@@ -363,7 +428,15 @@ export function InteractiveLiquidGoldShader({
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
 
-      animationRef.current = requestAnimationFrame(animate)
+      // Skip frames on low-end devices if performance is poor
+      const frameTime = performance.now() - frameStart
+      if (isLowEndDevice && frameTime > 20) { // 20ms = 50fps target
+        setTimeout(() => {
+          animationRef.current = requestAnimationFrame(animate)
+        }, 16) // Throttle to ~60fps max
+      } else {
+        animationRef.current = requestAnimationFrame(animate)
+      }
     }
 
     animate()

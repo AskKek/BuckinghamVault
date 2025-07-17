@@ -45,7 +45,10 @@
       "Bash(pnpm run:*)",
       "Bash(touch:*)",
       "Bash(node:*)",
-      "Bash(pnpm remove:*)"
+      "Bash(pnpm remove:*)",
+      "Bash(pnpm:*)",
+      "Bash(gtimeout:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

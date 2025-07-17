@@ -3,7 +3,7 @@
 import { motion, useInView } from "framer-motion"
 import { useRef, useEffect, useState } from "react"
 import { Quote, Star, Sparkles, Crown } from "lucide-react"
-import { useDeviceDetection, prefersReducedMotion } from "@/lib/animation-utils"
+import { useDeviceDetection, prefersReducedMotion, generateDeterministicParticles } from "@/lib/animation-utils"
 
 interface NorthStarSectionProps {
   quote: string
@@ -27,16 +27,8 @@ export function NorthStarSection({ quote }: NorthStarSectionProps) {
 
   useEffect(() => {
     setIsClient(true)
-    // Enhanced floating particles for premium atmosphere
-    setBackgroundParticles(Array.from({ length: 16 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 6,
-      duration: 12 + Math.random() * 10,
-      size: Math.random() * 1.8 + 0.5,
-      opacity: Math.random() * 0.4 + 0.1,
-    })))
+    // Enhanced floating particles for premium atmosphere - using deterministic values
+    setBackgroundParticles(generateDeterministicParticles(16, 501)) // Using seed 501 for north star section
   }, [])
 
   return (
@@ -234,7 +226,7 @@ export function NorthStarSection({ quote }: NorthStarSectionProps) {
 
               {/* Enhanced Quote */}
               <motion.blockquote
-                className="relative z-10 text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-light text-white leading-tight italic max-w-5xl mx-auto group-hover:text-gold/90 transition-colors duration-700"
+                className="relative z-10 text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-light text-white leading-tight italic max-w-5xl mx-auto md:group-hover:text-gold/90 transition-colors duration-700"
                 style={{ letterSpacing: '-0.02em', lineHeight: '1.2' }}
                 animate={{
                   scale: hoveredQuote ? 1.02 : 1,

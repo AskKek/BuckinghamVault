@@ -3,8 +3,9 @@
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Shield, Gem } from "lucide-react"
-import { motion, useScroll, useTransform } from "framer-motion"
+import { motion, useScroll, useTransform } from "@/lib/motion"
 import { useRef, useState } from "react"
+import { useDeviceDetection } from "@/lib/animation-utils"
 import { ElegantSidebar } from "../Navigation/elegant-sidebar"
 import { BuckinghamVaultIcon } from "../Custom-UI/buckingham-vault-icon"
 import { InquireModal } from "./inquire-modal"
@@ -26,6 +27,8 @@ export function PremiumHeroSection({ headline, subheadline, description }: HeroS
   const [authPortalOpen, setAuthPortalOpen] = useState(false)
   const [platformAccessOpen, setPlatformAccessOpen] = useState(false)
   const [titleHovered, setTitleHovered] = useState(false)
+  
+  const { isMobileOrTablet, isLowEndDevice } = useDeviceDetection()
   
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -102,7 +105,7 @@ export function PremiumHeroSection({ headline, subheadline, description }: HeroS
         </Suspense>
 
         {/* Hero Content */}
-        <div className="relative z-30 max-w-6xl mx-auto px-6 lg:px-8 text-center">
+        <div className="relative z-30 max-w-6xl mx-auto px-6 lg:px-8 text-center pt-24 md:pt-32">
           {/* The Buckingham Vault Title */}
           <motion.h2
             className="text-6xl md:text-8xl lg:text-9xl font-display font-black text-navy mb-6 tracking-tight leading-none"
@@ -125,7 +128,7 @@ export function PremiumHeroSection({ headline, subheadline, description }: HeroS
             transition={{ duration: 1, delay: 0.7 }}
           >
             <div className="relative">
-              <BuckinghamVaultIcon className="h-20 w-20 text-navy drop-shadow-lg" />
+              <BuckinghamVaultIcon className="h-32 w-32 md:h-40 md:w-40 lg:h-48 lg:w-48 text-navy drop-shadow-lg" />
               <motion.div
                 className="absolute inset-0 rounded-full bg-navy/10"
                 animate={{
@@ -268,46 +271,25 @@ export function PremiumHeroSection({ headline, subheadline, description }: HeroS
               onClick={() => setPlatformAccessOpen(true)}
               className="relative px-10 py-5 text-lg font-bold overflow-hidden group"
               style={{
+                background: 'linear-gradient(135deg, #f4b942 0%, #d79309 50%, #f4b942 100%)',
+                border: '2px solid transparent',
                 borderRadius: '12px',
-                position: 'relative',
-                isolation: 'isolate'
+                position: 'relative'
               }}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {/* Multi-layer animated gradient background */}
+              {/* Animated border gradient */}
               <motion.div
-                className="absolute inset-0 rounded-xl"
+                className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                 style={{
-                  background: 'linear-gradient(135deg, #f4b942 0%, #d79309 50%, #f4b942 100%)',
+                  background: 'linear-gradient(135deg, #101b3e, #1a2957, #101b3e)',
+                  padding: '2px',
+                  borderRadius: '12px',
                   backgroundSize: '200% 200%',
                 }}
                 animate={{
-                  backgroundPosition: ['0% 0%', '100% 100%'],
-                }}
-                transition={{
-                  duration: 4,
-                  repeat: Infinity,
-                  repeatType: 'reverse',
-                  ease: "easeInOut"
-                }}
-              />
-              
-              {/* Luxury metallic overlay */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-50" />
-              
-              {/* Premium animated border */}
-              <motion.div
-                className="absolute inset-0 rounded-xl"
-                style={{
-                  background: 'conic-gradient(from 0deg at 50% 50%, #fff 0deg, transparent 60deg, transparent 300deg, #fff 360deg)',
-                  padding: '2px',
-                  opacity: 0,
-                  mixBlendMode: 'overlay'
-                }}
-                animate={{
-                  opacity: [0, 0.8, 0],
-                  rotate: [0, 360],
+                  backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
                 }}
                 transition={{
                   duration: 3,
@@ -318,104 +300,36 @@ export function PremiumHeroSection({ headline, subheadline, description }: HeroS
                 <div className="absolute inset-[2px] rounded-[10px] bg-gradient-to-r from-gold to-gold-light" />
               </motion.div>
               
-              {/* Prismatic light effect */}
+              {/* Glow effect */}
               <motion.div
-                className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100"
+                className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"
                 style={{
-                  background: 'radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.4) 0%, transparent 25%), radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.3) 0%, transparent 25%)',
-                  filter: 'blur(10px)',
-                }}
-                animate={{
-                  scale: [1, 1.1, 1],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut"
+                  background: 'radial-gradient(circle at center, rgba(16, 27, 62, 0.4) 0%, transparent 70%)',
                 }}
               />
               
-              {/* Enhanced outer glow with multiple layers */}
-              <motion.div
-                className="absolute -inset-2 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                style={{
-                  background: 'radial-gradient(circle at center, rgba(244, 185, 66, 0.6) 0%, transparent 70%)',
-                  filter: 'blur(20px)',
-                }}
-              />
-              <motion.div
-                className="absolute -inset-4 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"
-                style={{
-                  background: 'radial-gradient(circle at center, rgba(215, 147, 9, 0.4) 0%, transparent 70%)',
-                  filter: 'blur(30px)',
-                }}
-              />
-              
-              {/* Button content with luxury styling */}
-              <span className="relative flex items-center justify-center">
-                <motion.span
-                  className="text-navy font-extrabold tracking-wide"
-                  style={{
-                    textShadow: '1px 1px 2px rgba(0, 0, 0, 0.2)',
-                  }}
-                  animate={{
-                    textShadow: [
-                      '1px 1px 2px rgba(0, 0, 0, 0.2)',
-                      '2px 2px 8px rgba(255, 255, 255, 0.5), 1px 1px 2px rgba(0, 0, 0, 0.2)',
-                      '1px 1px 2px rgba(0, 0, 0, 0.2)'
-                    ],
-                  }}
-                  transition={{
-                    duration: 2.5,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                >
-                  Vault Access
-                </motion.span>
+              {/* Button content */}
+              <span className="relative flex items-center justify-center text-navy group-hover:text-navy-dark transition-colors duration-300">
+                <Shield className="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform duration-500" />
+                Vault Access
+                <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-2 transition-transform duration-300" />
               </span>
               
-              {/* Premium sparkle particles */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                {[...Array(6)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute w-1 h-1 bg-white rounded-full"
-                    style={{
-                      left: `${20 + i * 12}%`,
-                      top: `${30 + (i % 2) * 40}%`,
-                    }}
-                    animate={{
-                      scale: [0, 1.5, 0],
-                      opacity: [0, 1, 0],
-                      y: [-10, -30],
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      delay: i * 0.2,
-                      ease: "easeOut"
-                    }}
-                  />
-                ))}
-              </div>
-              
-              {/* Luxury wave effect on hover */}
+              {/* Shimmer effect */}
               <motion.div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100"
                 style={{
-                  background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%)',
+                  background: 'linear-gradient(105deg, transparent 40%, rgba(16, 27, 62, 0.2) 50%, transparent 60%)',
                   borderRadius: '12px',
                 }}
-                initial={{ x: '-100%' }}
                 animate={{
-                  x: ['100%', '-100%'],
+                  x: ['-100%', '100%'],
                 }}
                 transition={{
-                  duration: 1.2,
+                  duration: 0.8,
                   repeat: Infinity,
-                  ease: "easeInOut",
-                  repeatDelay: 0.5
+                  repeatDelay: 1.5,
+                  ease: "easeInOut"
                 }}
               />
             </motion.button>

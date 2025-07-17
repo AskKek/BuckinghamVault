@@ -183,7 +183,7 @@ export function BrightpoolSection() {
                   <feature.icon className="w-6 h-6 text-gold" />
                 </div>
                 
-                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-gold transition-colors duration-300">
+                <h3 className="text-xl font-bold text-white mb-3 md:group-hover:text-gold transition-colors duration-300">
                   {feature.title}
                 </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">

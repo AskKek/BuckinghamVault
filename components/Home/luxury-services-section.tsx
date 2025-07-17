@@ -19,7 +19,7 @@ import {
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import Image from "next/image"
-import { useIsClient } from "@/hooks/use-is-client"
+import { useDeviceDetection, prefersReducedMotion, generateDeterministicParticles } from "@/lib/animation-utils"
 
 interface Service {
   icon: string
@@ -48,7 +48,8 @@ export function LuxuryServicesSection({ services }: ServicesSectionProps) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
   const [hoveredCard, setHoveredCard] = useState<number | null>(null)
-  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false)
+  const { isMobileOrTablet } = useDeviceDetection()
+  const [isClient, setIsClient] = useState(false)
   const [backgroundParticles, setBackgroundParticles] = useState<Array<{
     id: number;
     left: number;
@@ -58,33 +59,11 @@ export function LuxuryServicesSection({ services }: ServicesSectionProps) {
     size: number;
   }>>([])
 
-  const isClient = useIsClient()
-
   useEffect(() => {
-    if (!isClient) return
-    
-    const checkScreenSize = () => {
-      setIsMobileOrTablet(window.innerWidth < 1025)
-    }
-
-    checkScreenSize()
-    window.addEventListener("resize", checkScreenSize)
-    return () => window.removeEventListener("resize", checkScreenSize)
-  }, [isClient])
-
-  useEffect(() => {
-    if (!isClient) return
-    
-    // Enhanced floating particles for premium atmosphere
-    setBackgroundParticles(Array.from({ length: 12 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 4,
-      duration: 6 + Math.random() * 3,
-      size: Math.random() * 2 + 1,
-    })))
-  }, [isClient])
+    setIsClient(true)
+    // Enhanced floating particles for premium atmosphere - using deterministic values
+    setBackgroundParticles(generateDeterministicParticles(12, 401)) // Using seed 401 for luxury services section
+  }, [])
 
   return (
     <section 
@@ -152,7 +131,7 @@ export function LuxuryServicesSection({ services }: ServicesSectionProps) {
         </div>
 
         {/* Premium floating particles - desktop only */}
-        {isClient && !isMobileOrTablet && (
+        {isClient && !prefersReducedMotion() && !isMobileOrTablet && (
           <div className="absolute inset-0 pointer-events-none">
             {backgroundParticles.map((particle) => (
               <motion.div

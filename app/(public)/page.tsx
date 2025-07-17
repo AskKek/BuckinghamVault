@@ -12,7 +12,8 @@ import { NorthStarSection } from "@/components/Home/north-star-section"
 import { AnalyticsSection } from "@/components/Home/analytics-section"
 import { Footer } from "@/components/Home/footer"
 import { homePageContent, coreServices, differentiators, leadershipPartners, membershipBenefits } from "@/lib/cms-data"
-import { LoadingFallback } from '@/components/Core'
+// import { LoadingFallback } from '@/components/Core'
+// import { LazyAnalytics } from '@/components/Core/LazyAnalytics'
 
 // Loading skeletons for each section
 const HeroSkeleton = () => (

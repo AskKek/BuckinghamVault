@@ -5,8 +5,8 @@ import { useRef, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, BarChartBig, ShieldCheck, Activity, Star, Sparkles, Crown, Zap } from "lucide-react"
 import Link from "next/link"
-import Image from "next/image"
-import { useDeviceDetection, prefersReducedMotion } from "@/lib/animation-utils"
+import { DecorativeImage } from "@/components/ui/responsive-image"
+import { useDeviceDetection, prefersReducedMotion, generateDeterministicParticles } from "@/lib/animation-utils"
 
 export function AnalyticsSection() {
   const ref = useRef(null)
@@ -26,16 +26,8 @@ export function AnalyticsSection() {
 
   useEffect(() => {
     setIsClient(true)
-    // Enhanced floating particles for premium atmosphere
-    setBackgroundParticles(Array.from({ length: 25 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 8,
-      duration: 16 + Math.random() * 14,
-      size: Math.random() * 1.6 + 0.4,
-      opacity: Math.random() * 0.4 + 0.1,
-    })))
+    // Enhanced floating particles for premium atmosphere - using deterministic values
+    setBackgroundParticles(generateDeterministicParticles(25, 201)) // Using seed 201 for analytics section
   }, [])
 
   const features = [
@@ -105,11 +97,12 @@ export function AnalyticsSection() {
           transition={{ duration: 2.5, delay: 0.5, ease: "easeOut" }}
         >
           <div className="relative w-full h-full max-w-5xl">
-            <Image 
+            <DecorativeImage 
               src="/images/home-page-vault.png" 
               alt="Buckingham Vault Analytics Platform" 
               fill 
-              className="object-contain filter brightness-125 contrast-110 sepia-[0.15] saturate-120" 
+              className="object-contain filter brightness-125 contrast-110 sepia-[0.15] saturate-120"
+              sizes="(max-width: 1024px) 80vw, 1200px"
             />
             
             {/* Enhanced golden overlay for brand consistency */}
@@ -295,7 +288,7 @@ export function AnalyticsSection() {
                       transition={{ type: "spring", stiffness: 300, damping: 25 }}
                     >
                       <h3 
-                        className="text-xl md:text-2xl font-light text-white group-hover:text-gold transition-colors duration-500 leading-tight"
+                        className="text-xl md:text-2xl font-light text-white md:group-hover:text-gold transition-colors duration-500 leading-tight"
                         style={{ letterSpacing: '-0.01em' }}
                       >
                         {feature.title}

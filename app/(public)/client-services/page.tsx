@@ -1,6 +1,5 @@
 import { InstitutionalHeroSection } from '@/components/Client-Portal/institutional-hero-section'
-import { TrustIndicatorsSection } from '@/components/Client-Portal/trust-indicators-section'
-import { InstitutionalClienteleSection } from '@/components/Client-Portal/institutional-clientele-section'
+// Note: TrustIndicatorsSection and InstitutionalClienteleSection temporarily disabled for reimplementation
 import { OTCCapabilitiesSection } from '@/components/Client-Portal/otc-capabilities-section'
 import { InstitutionalServicesSection } from '@/components/Client-Portal/institutional-services-section'
 import { InstitutionalFooter } from '@/components/Client-Portal/institutional-footer'

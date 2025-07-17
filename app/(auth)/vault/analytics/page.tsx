@@ -6,8 +6,9 @@ import BitcoinBalancePriceChart from "@/components/Analytics/bitcoin-balance-pri
 import LiquidityAnalysisEngine from "@/components/Analytics/liquidity-analysis-engine"
 import RegulatoryIntelligenceCenter from "@/components/Analytics/regulatory-intelligence-center"
 import MacroIntelligenceDashboard from "@/components/Analytics/macro-intelligence-dashboard"
+import OracleTrendAnalysisEngine from "@/components/Analytics/OracleTrendAnalysisEngine"
 import { PageLayout } from "@/components/page-layout"
-import { Shield, Activity, BarChartBig, Bitcoin, Droplets, Scale, Globe } from "lucide-react"
+import { Shield, Activity, BarChartBig, Bitcoin, Droplets, Scale, Globe, Eye } from "lucide-react"
 import { BuckinghamVaultIcon } from "@/components/Custom-UI/buckingham-vault-icon"
 
 export const dynamic = 'force-dynamic'
@@ -64,6 +65,13 @@ export default function AnalyticsPage() {
               <span className="font-medium">Market Pulse</span>
             </a>
             <a
+              href="#oracle-analysis"
+              className="flex items-center space-x-2 text-white/70 hover:text-white transition-colors"
+            >
+              <Eye className="w-4 h-4" />
+              <span className="font-medium">Oracle Analysis</span>
+            </a>
+            <a
               href="#bitcoin-analysis"
               className="flex items-center space-x-2 text-white/70 hover:text-white transition-colors"
             >
@@ -114,6 +122,11 @@ export default function AnalyticsPage() {
         {/* Market Pulse Section */}
         <section id="market-pulse">
           <EnhancedCryptoTicker />
+        </section>
+
+        {/* Oracle Trend Analysis Section */}
+        <section id="oracle-analysis">
+          <OracleTrendAnalysisEngine />
         </section>
 
         {/* Bitcoin Analysis Section */}
