@@ -1,69 +1,64 @@
 name: Deploy to EC2
 
-# ─────────────────────────────────────────────────────────────
-# Trigger: push to main (change branch name if you deploy another)
 on:
   push:
-    branches: [main]
+    branches: [main] # adjust if needed
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    # Keep checkout depth 0 (fetch all history) if you use git-based versioning
     steps:
-      - name: Checkout code
+      # ─────────── Check out repo ───────────
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # ────────────────── Build locally to fail fast ────────────
+      # ─────────── Node & pnpm setup ────────
       - name: Set up Node 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: "pnpm"
+          cache-dependency-path: "**/pnpm-lock.yaml"
 
-      - name: Install deps & build
+      - name: Enable Corepack & pnpm
         run: |
           corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm --version
+
+      # ─────────── Build locally (fail-fast) ─
+      - name: Install deps & build
+        run: |
           pnpm install --frozen-lockfile
           pnpm build
 
-      # ────────────────── Deploy to EC2 via SSH ─────────────────
-      - name: Deploy over SSH
+      # ─────────── Deploy over SSH ───────────
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SSH_HOST }} # 98.85.15.226
-          username: ec2-user # default Amazon Linux user
-          key: ${{ secrets.SSH_KEY }} # private key added as secret
+          host: ${{ secrets.SSH_HOST }}
+          username: ec2-user
+          key: ${{ secrets.SSH_KEY }}
           envs: GITHUB_SHA
           script: |
             set -e
-
-            echo "🔄  Pulling latest code"
-            cd ~/bVault
+            echo "🔄  Pulling commit on server"
+            cd ~/BuckinghamVault              # <── updated directory
             git fetch origin
-            git reset --hard $GITHUB_SHA      # deploy exactly the pushed commit
+            git reset --hard $GITHUB_SHA
 
-            echo "📦  Installing dependencies"
+            echo "📦  Installing deps"
             corepack enable
             pnpm install --frozen-lockfile
 
-            echo "🏗   Building Next.js"
+            echo "🏗   Building"
             pnpm build
 
-            echo "🚀  Reloading PM2 process"
+            echo "🚀  Reloading PM2"
             pm2 reload bvault-dev --update-env
 
-            echo "🔃  Reloading NGINX"
+            echo "🔃  Reloading Nginx"
             sudo systemctl reload nginx
-
-    # ────────────────── Optional Slack notification ───────────
-    # - name: Notify Slack
-    #   uses: 8398a7/action-slack@v3
-    #   with:
-    #     status: ${{ job.status }}
-    #     fields: repo,message,commit,author
-    #   env:
-    #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
