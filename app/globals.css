@@ -198,13 +198,37 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
-  /* Enhanced text gradient */
+  /* Enhanced text gradient with proper fallbacks */
   .text-gradient {
-    background: linear-gradient(135deg, #d79309 0%, #f4b942 25%, #d79309 50%, #f4b942 75%, #d79309 100%);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    /* Fallback color for browsers that don't support background-clip: text */
+    color: #f4b942;
+    text-shadow: 0 0 10px rgba(244, 185, 66, 0.2);
+  }
+
+  /* Progressive enhancement for supported browsers */
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    @media (min-width: 1025px) {
+      .text-gradient {
+        background: linear-gradient(135deg, #d79309 0%, #f4b942 25%, #d79309 50%, #f4b942 75%, #d79309 100%);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        color: transparent; /* Hide fallback color when gradient works */
+        text-shadow: none; /* Remove fallback shadow */
+      }
+    }
+  }
+
+  /* Firefox-specific fallback */
+  @-moz-document url-prefix() {
+    .text-gradient {
+      color: #f4b942;
+      background: none;
+      -webkit-background-clip: unset;
+      -webkit-text-fill-color: unset;
+      background-clip: unset;
+    }
   }
   
   /* Ensure consistent navy text color */
@@ -265,9 +289,24 @@
   /* Mobile optimizations */
   @media (max-width: 1024px) {
     .text-gradient {
-      background: linear-gradient(135deg, #d79309 0%, #f4b942 100%);
-      background-size: 100% 100%;
+      /* Force fallback approach on mobile to prevent gold bar rendering */
+      color: #f4b942 !important;
+      background: none !important;
+      -webkit-background-clip: unset !important;
+      -webkit-text-fill-color: unset !important;
+      background-clip: unset !important;
+      text-shadow: 0 0 12px rgba(244, 185, 66, 0.3);
+      /* Add subtle animation to maintain premium feel */
+      transition: color 0.3s ease, text-shadow 0.3s ease;
     }
+    
+    /* Enhanced mobile hover state */
+    .group:hover .text-gradient,
+    .text-gradient:hover {
+      color: #d79309 !important;
+      text-shadow: 0 0 15px rgba(215, 147, 9, 0.4);
+    }
+  }
 
     .glass-morphism {
       background: rgba(3, 1, 50, 0.5);
@@ -293,7 +332,6 @@
       display: none;
     }
   }
-}
 
 /* Keyframes - Desktop only */
 @media (min-width: 1025px) {
