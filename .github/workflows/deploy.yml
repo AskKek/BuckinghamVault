@@ -1,0 +1,69 @@
+name: Deploy to EC2
+
+# ─────────────────────────────────────────────────────────────
+# Trigger: push to main (change branch name if you deploy another)
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    # Keep checkout depth 0 (fetch all history) if you use git-based versioning
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ────────────────── Build locally to fail fast ────────────
+      - name: Set up Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "pnpm"
+
+      - name: Install deps & build
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      # ────────────────── Deploy to EC2 via SSH ─────────────────
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }} # 98.85.15.226
+          username: ec2-user # default Amazon Linux user
+          key: ${{ secrets.SSH_KEY }} # private key added as secret
+          envs: GITHUB_SHA
+          script: |
+            set -e
+
+            echo "🔄  Pulling latest code"
+            cd ~/bVault
+            git fetch origin
+            git reset --hard $GITHUB_SHA      # deploy exactly the pushed commit
+
+            echo "📦  Installing dependencies"
+            corepack enable
+            pnpm install --frozen-lockfile
+
+            echo "🏗   Building Next.js"
+            pnpm build
+
+            echo "🚀  Reloading PM2 process"
+            pm2 reload bvault-dev --update-env
+
+            echo "🔃  Reloading NGINX"
+            sudo systemctl reload nginx
+
+    # ────────────────── Optional Slack notification ───────────
+    # - name: Notify Slack
+    #   uses: 8398a7/action-slack@v3
+    #   with:
+    #     status: ${{ job.status }}
+    #     fields: repo,message,commit,author
+    #   env:
+    #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
