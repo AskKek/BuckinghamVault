@@ -2,40 +2,40 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [main] # adjust if needed
+    branches: [main] # change if you deploy another branch
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # ─────────── Check out repo ───────────
+      # 1) Checkout repo
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # ─────────── Node & pnpm setup ────────
+      # 2) Install Node (no pnpm cache flag here)
       - name: Set up Node 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: "pnpm"
-          cache-dependency-path: "**/pnpm-lock.yaml"
 
-      - name: Enable Corepack & pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
-          pnpm --version
+      # 3) Install pnpm + enable automatic caching
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+          run_install: false # we'll run install manually
+          cache: true # enables built-in pnpm-lock.yaml cache
 
-      # ─────────── Build locally (fail-fast) ─
+      # 4) Install deps & build
       - name: Install deps & build
         run: |
           pnpm install --frozen-lockfile
           pnpm build
 
-      # ─────────── Deploy over SSH ───────────
+      # 5) Deploy to EC2 over SSH
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -45,8 +45,8 @@ jobs:
           envs: GITHUB_SHA
           script: |
             set -e
-            echo "🔄  Pulling commit on server"
-            cd ~/BuckinghamVault              # <── updated directory
+            echo "🔄  Updating code on server"
+            cd ~/BuckinghamVault
             git fetch origin
             git reset --hard $GITHUB_SHA
 
