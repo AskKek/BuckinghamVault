@@ -45,20 +45,10 @@ jobs:
           envs: GITHUB_SHA
           script: |
             set -e
-            echo "🔄  Updating code on server"
-            cd ~/BuckinghamVault
+            cd ~/BuckinghamVault      # ← matches your new path
             git fetch origin
             git reset --hard $GITHUB_SHA
-
-            echo "📦  Installing deps"
-            corepack enable
             pnpm install --frozen-lockfile
-
-            echo "🏗   Building"
             pnpm build
-
-            echo "🚀  Reloading PM2"
             pm2 reload bvault-dev --update-env
-
-            echo "🔃  Reloading Nginx"
             sudo systemctl reload nginx
